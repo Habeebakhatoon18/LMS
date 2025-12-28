@@ -49,16 +49,16 @@ import UserModel from "../models/user.js";
 
 export const clerkWebhook = async (req, res) => {
   try {
-   const whook = new Webhook(process.env.SVIX_SIGNING_SECRETS);
+   const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
-     await whook.verify(JSON.stringify(req.body),{
-         'svix-id': req.headers['svix-id'],
-         'svix-timestamp': req.headers['svix-timestamp'],
-         'svix-signature': req.headers['svix-signature']
-     });
+    const headers = {
+      "svix-id": req.headers["svix-id"],
+      "svix-timestamp": req.headers["svix-timestamp"],
+      "svix-signature": req.headers["svix-signature"],
+    };
 
-     const {data, type } = req.body;
-
+    const event = whook.verify(req.body, headers);
+    const { type, data } = event;
 
     switch (type) {
       case "user.created":

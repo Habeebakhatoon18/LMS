@@ -15,7 +15,12 @@ app.use(cors());
 app.use('/', (req, res) => {
     res.send("API is working");
 });
-app.post('/clerk', express.json(), clerkWebhook);
+app.post(
+  "/clerk",
+  express.raw({ type: "application/json" }),
+  clerkWebhook
+);
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
