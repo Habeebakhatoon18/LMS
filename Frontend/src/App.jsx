@@ -13,7 +13,7 @@ import MyEnrolment from "./pages/student/MyEnrolment.jsx";
 import Player from "./pages/student/Player.jsx";
 import CoursesList from "./pages/student/CoursesList.jsx";
 import Loading from "./components/Student/Loading.jsx";
-
+import 'quill/dist/quill.snow.css';
 const App = () => {
   return (
     <Routes>
