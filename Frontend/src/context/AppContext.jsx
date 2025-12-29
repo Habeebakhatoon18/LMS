@@ -2,13 +2,26 @@ import { createContext, useState, useEffect } from "react";
 export const  AppContext = createContext();
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../assets/assests";
+import { useAuth, useUser } from "@clerk/clerk-react";
 
-export const AppContextProvider = (props) => {
+export const AppContextProvider =  (props) => {
     const navigate = useNavigate();
     const [faqs, setFaqs] = useState([]);
     const [isEducator, setIsEducator] = useState(true);
     const [isEnrolled, setIsEnrolled] = useState(false);
 
+    const {getToken} = useAuth();
+    const {user} = useUser();
+    const logToken = async () => {
+        console.log(await getToken());
+    };
+
+    useEffect(() => {
+        if (user ){
+            logToken();
+        }
+    }, [user]);
+    
     useEffect(() => {
         let mounted = true;
         (async () => {

@@ -13,7 +13,7 @@ const connectDB = async () => {
         } catch (e) {
             // ignore masking errors
         }
-        console.log("Connecting to MongoDB:", safeUri);
+        // console.log("Connecting to MongoDB:", safeUri);
     }
 
     try {
