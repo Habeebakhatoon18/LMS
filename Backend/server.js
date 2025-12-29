@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { application } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import connectDB from './config/mongodb.js';
-import clerkWebhook from './controllers/webhook.js';
+import {clerkWebhook, stripeWebhook} from './controllers/webhook.js';
 import { clerkMiddleware } from '@clerk/express';
 import EducatorRouter from './routes/educator.js';
 import connectCloudinary from './config/cloudinary.js';
@@ -17,9 +17,8 @@ await connectCloudinary();
 
 // Allow the frontend to send Clerk session cookies. Set `CLIENT_URL` in your .env
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
-app.use(express.json());
 app.use(clerkMiddleware());
-app.use(bodyParser.json());
+
 
 app.post(
   "/clerk",
@@ -29,9 +28,10 @@ app.post(
 
 
 
-app.use('/educator', EducatorRouter)
-app.use('/courses', CourseRouter);
-app.use('/user', UserRouter);
+app.use('/educator', express.json(), EducatorRouter)
+app.use('/courses',express.json(),  CourseRouter);
+app.use('/user',express.json(),  UserRouter);
+app.use('/stripe',express.raw({type: 'application/json'}),stripeWebhook);
 app.use('/', (req, res) => {
     res.send("API is working");
 });
