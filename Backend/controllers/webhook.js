@@ -1,8 +1,9 @@
-import Stripe from 'stripe';
+import stripe from 'stripe';
 import { Webhook } from "svix";
 import UserModel from "../models/user.js";
 import PurchaseModel from '../models/purchase.js';
 import CourseModel from '../models/course.js'
+import stripeInstance from "../config/stripe.js";
 
 export const clerkWebhook = async (req, res) => {
   try {
@@ -57,10 +58,10 @@ export const clerkWebhook = async (req, res) => {
   }
 };
 
-export default clerkWebhook;
 
-const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
-
+// console.log("Stripe key at boot:", process.env.STRIPE_SECRET_KEY);
+ //const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+ //const stripeInstance = stripe(process.env.STRIPE_SECRET_KEY);
 export const stripeWebhook = async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;

@@ -1,13 +1,13 @@
 import UserModel from "../models/user.js";
 import PurchaseModel from "../models/purchase.js";
 import CourseModel from "../models/course.js";
-import stripe from 'stripe';
+import stripeInstance from "../config/stripe.js";
+
 
 export const getUserData = async (req, res) => {
     try {
         const { userId } = req.auth();
         
-        console.log("userid",userId);
         const user = await UserModel.findOne({ id: userId });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
@@ -53,7 +53,7 @@ export const purchaseCourse = async (req, res) => {
          }
          const newPurchase = await PurchaseModel.create(purchaseData);
 
-         const stripeInstance = stripe(process.env.STRIPE_SECRET_KEY);
+     
          const currency = process.env.CURRENCY.toLowerCase() || 'USD';
          const lineItems = [
             {
