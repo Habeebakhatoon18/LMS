@@ -30,7 +30,7 @@ app.post(
 app.use('/educator', express.json(), EducatorRouter)
 app.use('/courses',express.json(),  CourseRouter);
 app.use('/user',express.json(),  UserRouter);
-app.use('/stripe',express.raw({type: 'application/json'}),stripeWebhook);
+app.post('/stripe',express.raw({type: 'application/json'}),stripeWebhook);
 app.use('/', (req, res) => {
     res.send("API is working");
 });
