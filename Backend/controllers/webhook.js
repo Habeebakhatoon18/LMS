@@ -59,9 +59,7 @@ export const clerkWebhook = async (req, res) => {
 };
 
 
-// console.log("Stripe key at boot:", process.env.STRIPE_SECRET_KEY);
- //const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
- //const stripeInstance = stripe(process.env.STRIPE_SECRET_KEY);
+
 export const stripeWebhook = async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -85,8 +83,8 @@ export const stripeWebhook = async (req, res) => {
       const userData = await UserModel.findOne({id:purchaseData.userId});
       const courseData = await CourseModel.findById(purchaseData.courseId.toString())
 
-      //courseData.enrolledStudents.push(userData)
-      courseData.enrolledStudents.push(userData.id)
+      courseData.enrolledStudents.push(userData)
+      // courseData.enrolledStudents.push(userData.id)
       await courseData.save()
 
       userData.enrolledCourses.push(courseData._id)
