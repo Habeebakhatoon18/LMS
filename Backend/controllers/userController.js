@@ -12,7 +12,7 @@ export const getUserData = async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        return res.status(200).json(user);
+        return res.json({ success: true, user });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to fetch user data" });
@@ -22,9 +22,13 @@ export const getUserData = async (req, res) => {
 export const getEnrolledCourses = async (req, res) => {
     try {
         const { userId } = req.auth();
-        const userData = await UserModel.findOne({ id: userId }).populate('enrolledCourses');
+        if (!userId) return
+        const userData = await UserModel.findOne({ id: userId }).populate({
+            path: 'enrolledCourses',
+            populate: { path: 'educator' }
+        });
 
-        return res.status(200).json({ enrolledCourses: userData.enrolledCourses });
+        return res.json({ success: true, enrolledCourses: userData.enrolledCourses });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to fetch enrolled courses" });
@@ -77,7 +81,7 @@ export const purchaseCourse = async (req, res) => {
             },
         });
 
-        return res.status(200).json({ url: session.url });
+        return res.json({ success: true, url: session.url });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to initiate purchase" });
@@ -91,13 +95,13 @@ export const updateCourseProgess = async (req, res) => {
         const progressData = await CourseProgress.findOne({ courseId, userId });
         if (progressData) {
             if (progressData.lecturesCompleted.includes(lectureId)) {
-                return res.json({ status: true, message: 'lecture already complete' })
+                return res.json({ success: true, message: 'lecture already complete' })
             }
             progressData.lecturesCompleted.push(lectureId);
             await progressData.save();
-            return res.json({ status: true, message: 'lecture completed' })
+            return res.json({ success: true, message: 'lecture completed' })
         } else {
-            await courseProgess.create({
+            await CourseProgress.create({
                 userId,
                 courseId,
                 lecturesCompleted: [lectureId]
@@ -105,7 +109,7 @@ export const updateCourseProgess = async (req, res) => {
         }
         return res.json({ status: true, message: 'progress updated' })
     } catch (err) {
-        console.error(error);
+        console.error(err);
         return res.status(500).json({ error: "Failed to update progress" });
     }
 }
@@ -115,9 +119,9 @@ export const getUserCourseProgress = async (req, res) => {
         const { userId } = req.auth();
         const { courseId } = req.body;
         const progressData = await CourseProgress.findOne({ courseId, userId });
-        return res.json({ status: true, progressData })
+        return res.json({ success: true, progressData })
     } catch (err) {
-        return res.json({ status: false, message: err.message })
+        return res.json({ success: false, message: err.message })
     }
 }
 

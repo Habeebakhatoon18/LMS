@@ -14,28 +14,32 @@ import Player from "./pages/student/Player.jsx";
 import CoursesList from "./pages/student/CoursesList.jsx";
 import Loading from "./components/Student/Loading.jsx";
 import 'quill/dist/quill.snow.css';
+import { ToastContainer } from "react-toastify";
 const App = () => {
   return (
-    <Routes>
+    <>
+      <ToastContainer />
+      <Routes>
 
-      {/* Student routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/course/:id" element={<CourseDetail />} />
-      <Route path="/my-enrolments" element={<MyEnrolment />} />
-      <Route path="/player/:courseId" element={<Player />} />
-      <Route path="/courseList" element={<CoursesList />} />
-      <Route path="/courseList/:input" element={<CourseDetail />} />
-      <Route path="/loading/:path" element={<Loading />} />
+        {/* Student routes */}
+        <Route path="/" element={<Home />} />
+        <Route path="/course/:id" element={<CourseDetail />} />
+        <Route path="/my-enrolments" element={<MyEnrolment />} />
+        <Route path="/player/:courseId" element={<Player />} />
+        <Route path="/courseList" element={<CoursesList />} />
+        <Route path="/courseList/:input" element={<CourseDetail />} />
+        <Route path="/loading/:path" element={<Loading />} />
 
-      {/* Educator routes */}
-      <Route path="/educator" element={<Educator />}>
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="my-courses" element={<MyCourses />} />
-        <Route path="students-enroll/:courseId" element={<StudentsEnroll />} />
-        <Route path="add-course" element={<AddCourse />} />
-      </Route>
+        {/* Educator routes */}
+        <Route path="/educator" element={<Educator />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="my-courses" element={<MyCourses />} />
+          <Route path="students-enroll/:courseId" element={<StudentsEnroll />} />
+          <Route path="add-course" element={<AddCourse />} />
+        </Route>
 
-    </Routes>
+      </Routes>
+    </>
   );
 };
 

@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, X, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
 
 const FAQSection = () => {
-  const navigate = useNavigate();
-//   const { data: faqs, loading } = useApi(() => apiService.getFAQs());
-const { faqs } = React.useContext(AppContext);
-  
+  const { faqs, navigate } = React.useContext(AppContext);
   const [openFAQs, setOpenFAQs] = useState(new Set(['']));
-
-  const handleStartLearningClick = () => {
-    navigate('/signup');
-  };
 
   const toggleFAQ = (id) => {
     const newOpenFAQs = new Set(openFAQs);
@@ -27,7 +19,7 @@ const { faqs } = React.useContext(AppContext);
   return (
     <section
       id="faq"
-      className="py-20 bg-gradient-to-br from-emerald-50 to-lime-50"
+      className="py-20  from-emerald-50 to-lime-50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
@@ -78,29 +70,12 @@ const { faqs } = React.useContext(AppContext);
                 />
               </div>
 
-              <button
-                onClick={handleStartLearningClick}
-                className="bg-sky-500 text-white px-6 py-3 rounded-full font-medium hover:bg-sky-600 transition-colors duration-200 flex items-center space-x-2"
-              >
-                <span>Start Learning Now</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
+
             </div>
           </div>
 
           {/* Right Side - FAQ List */}
           <div className="space-y-4">
-            {/* {loading ? (
-              [...Array(4)].map((_, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-2xl p-6 shadow-lg"
-                >
-                  <div className="h-6 bg-gray-200 rounded animate-pulse mb-4"></div>
-                  <div className="h-16 bg-gray-200 rounded animate-pulse"></div>
-                </div>
-              ))
-            ) :  */}
             {faqs && faqs.length > 0 ? (
               faqs.map((faq) => (
                 <div

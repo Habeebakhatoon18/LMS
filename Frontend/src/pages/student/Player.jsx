@@ -1,115 +1,293 @@
-import React, { useState, useContext, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
-import { AppContext } from '../../context/AppContext'
+
+import React, { useState, useContext, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import YouTube from "react-youtube";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { AppContext } from "../../context/AppContext";
+
+const StarRating = ({ value, onRate }) => {
+  const [hover, setHover] = useState(0);
+
+  return (
+    <div className="flex gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          onClick={() => onRate(star)}
+          onMouseEnter={() => setHover(star)}
+          onMouseLeave={() => setHover(0)}
+          className={`text-xl transition ${star <= (hover || value)
+            ? "text-yellow-400"
+            : "text-gray-300"
+            }`}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+};
 
 const Player = () => {
   const { courseId } = useParams();
-  const { enrolledCourses } = useContext(AppContext);
-  const [courseData, setCourseData] = useState(null);
-  const [openSection, setOpenSection] = useState(null);
-  const [playerState, setPlayerState] = useState(null);
+  const {
+    enrolledCourses,
+    backendURL,
+    getToken,
+    fetchUserEnrolledCourses,
+    user,
+  } = useContext(AppContext);
 
-  const getCourseData = () => {
-    const course = (enrolledCourses || []).find(c => c.id === courseId) || null;
-    setCourseData(course);
-    // set first lesson as active by default
-    if (course && course.sections && course.sections.length) {
-      const firstSection = course.sections[0];
-      if (firstSection && firstSection.lessons && firstSection.lessons.length) {
-        setPlayerState({
-          sectionId: firstSection.id,
-          lesson: firstSection.lessons[0]
-        });
-        setOpenSection(firstSection.id);
-      }
-    }
-  }
+  const [course, setCourse] = useState(null);
+  const [openChapter, setOpenChapter] = useState(null);
+  const [currentLecture, setCurrentLecture] = useState(null);
+  const [progressData, setProgressData] = useState(null);
+  const [initialRating, setInitialRating] = useState(0);
+
 
   useEffect(() => {
-    getCourseData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId, enrolledCourses]);
+    const foundCourse = enrolledCourses.find(
+      (c) => c._id === courseId
+    );
 
-  if (!courseData) return (
-    <div style={{padding:20}}>Loading course...</div>
-  )
+    if (foundCourse) {
+      setCourse(foundCourse);
 
-  const handleToggleSection = (sectionId) => {
-    setOpenSection(openSection === sectionId ? null : sectionId);
-  }
+      const userRating = foundCourse.courseRating?.find(
+        (r) => r.userId === user?._id
+      );
+      if (userRating) setInitialRating(userRating.rating);
+    }
+  }, [enrolledCourses, courseId, user]);
 
-  const handleSelectLesson = (sectionId, lesson) => {
-    setPlayerState({ sectionId, lesson });
-  }
+  const getCourseProgress = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${backendURL}/user/get-course-progress`,
+        { courseId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
+      if (data.success) setProgressData(data.progressData);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  useEffect(() => {
+    getCourseProgress();
+  }, [courseId]);
+
+  const markComplete = async (lectureId) => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${backendURL}/user/update-course-progress`,
+        { courseId, lectureId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        setProgressData((prev) => ({
+          ...prev,
+          lectureCompleted: [...(prev?.lectureCompleted || []), lectureId],
+        }));
+      }
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const handleRate = async (rating) => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${backendURL}/user/add-rating`,
+        { courseId, rating },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        toast.success("Rating submitted");
+        fetchUserEnrolledCourses();
+      }
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  useEffect(() => {
+    const fetchRating = async () => {
+      try {
+        const token = await getToken();
+        const { data } = await axios.get(
+          `${backendURL}/courses/${courseId}`,
+          { courseId },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (data.success) {
+          setInitialRating(data.course.courseRating[0].rating); // Set the existing rating
+        }
+      } catch (err) {
+        console.error("Error fetching rating:", err);
+      }
+    };
+    fetchRating();
+  }, [courseId, backendURL]);
+
+
+  if (!course) return <div className="p-6">Loading course...</div>;
   return (
-    <div className="flex gap-4 p-2">
-      {/* Left: course structure */}
-      <div className="w-2/5 max-w-[420px]">
-        <div>
-          <h3 className="text-base font-semibold mt-0">Course Structure</h3>
-          <div className="border border-gray-200 rounded-md overflow-hidden bg-white">
-            {courseData.sections && courseData.sections.map(section => (
-              <div key={section.id} className="border-b border-gray-100">
-                <button onClick={() => handleToggleSection(section.id)} className="w-full text-left px-4 py-3 bg-gray-50 flex justify-between items-center cursor-pointer">
-                  <div className="font-semibold">{section.title}</div>
-                  <div className="text-sm text-gray-600">{section.lessons ? `${section.lessons.length} lectures` : ''} • {section.totalDuration || ''}</div>
-                </button>
-                {openSection === section.id && (
-                  <div className="px-3 py-2">
-                    {section.lessons && section.lessons.map(lesson => {
-                      const active = playerState && playerState.lesson && playerState.lesson.id === lesson.id;
-                      return (
-                        <div key={lesson.id} className="flex items-center justify-between py-2">
-                          <div className="flex items-center gap-3">
-                            <button
-                              onClick={() => handleSelectLesson(section.id, lesson)}
-                              aria-label={`Play ${lesson.title}`}
-                              className={`w-8 h-8 rounded-full flex items-center justify-center border border-gray-200 ${active ? 'bg-blue-600 text-white' : 'bg-white text-gray-800'}`}
-                            >
-                              ▶
-                            </button>
-                            <div>
-                              <div className={`${active ? 'text-sm font-semibold' : 'text-sm font-medium'}`}>{lesson.title}</div>
-                              <div className="text-xs text-gray-500">{lesson.duration || ''}</div>
-                            </div>
-                          </div>
-                          <div className="text-sm text-blue-600">Watch</div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+    <div className="flex gap-8 p-6 bg-gray-50 min-h-screen">
 
-      {/* Right: player area */}
-      <div className="flex-1 flex flex-col items-start">
-        <div className="bg-black rounded-md overflow-hidden relative pb-[56.25%] h-0 w-full max-w-[720px] mx-auto">
-          {playerState && playerState.lesson ? (
-            <iframe
-              title={playerState.lesson.title}
-              src={playerState.lesson.videoUrl ? playerState.lesson.videoUrl : 'https://www.youtube.com/embed/5qap5aO4i9A'}
-              className="absolute top-0 left-0 w-full h-full border-0"
-              allowFullScreen
+      {/*LEFT SIDEBAR  */}
+      <aside className=" bg-white rounded-xl shadow-sm border flex flex-col">
+
+        <div className="px-4 py-3 border-b sticky top-0 bg-white z-10">
+          <h3 className="text-base font-semibold text-gray-800">
+            Course Content
+          </h3>
+        </div>
+
+        {/* SCROLLABLE CONTENT */}
+        <div className="flex-1 overflow-y-auto divide-y">
+          {course.courseContent.map((chapter) => (
+            <div key={chapter.chapterid}>
+              <button
+                onClick={() =>
+                  setOpenChapter(
+                    openChapter === chapter.chapterid
+                      ? null
+                      : chapter.chapterid
+                  )
+                }
+                className="w-full px-4 py-3 flex justify-between hover:bg-gray-50"
+              >
+                <span className="font-medium text-sm text-gray-800">
+                  {chapter.chapterTitle}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {chapter.chapterContent.length} lectures
+                </span>
+              </button>
+
+              {openChapter === chapter.chapterid && (
+                <div className="bg-gray-50 px-2 py-2 space-y-1">
+                  {chapter.chapterContent.map((lecture) => {
+                    const active =
+                      currentLecture?.lectureId === lecture.lectureId;
+                    const completed =
+                      progressData?.lectureCompleted?.includes(
+                        lecture.lectureId
+                      );
+
+                    return (
+                      <button
+                        key={lecture.lectureId}
+                        onClick={() =>
+                          setCurrentLecture({ ...lecture, chapter })
+                        }
+                        className={`w-full flex justify-between items-center px-2 py-2 rounded-md text-xs transition
+                          ${active
+                            ? "bg-blue-50 text-blue-700 font-semibold"
+                            : "hover:bg-white text-gray-700"
+                          }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`w-6 h-6 flex items-center justify-center rounded-full text-[10px]
+                              ${completed
+                                ? "bg-green-500 text-white"
+                                : "bg-blue-100 text-blue-600"
+                              }`}
+                          >
+                            ▶
+                          </span>
+                          <span className="truncate ">
+                            {lecture.lectureTitle}
+                          </span>
+                        </div>
+
+                        <span className="text-[10px] text-gray-500">
+                          {completed ? "✓" : `${lecture.lectureDuration}m`}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* RATING */}
+        <div className="border-t px-4 py-3 bg-white sticky bottom-0">
+          <p className="text-xs text-gray-600 mb-1">
+            Rate this course
+          </p>
+          <StarRating
+            value={initialRating}
+            onRate={(rating) => {
+              setInitialRating(rating);
+              handleRate(rating);
+            }}
+          />
+        </div>
+      </aside>
+
+      {/* MAIN PLAYER*/}
+      <main className="flex-1 space-y-4">
+
+        {/* VIDEO */}
+        <div className="bg-black rounded-xl overflow-hidden shadow-md">
+          {currentLecture ? (
+            <YouTube
+              videoId={currentLecture.lectureUrl.split("/").pop()}
+              className="w-full aspect-video"
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-white">No lesson selected</div>
+            <div className="aspect-video flex items-center justify-center text-gray-400">
+              <img src={course.courseThumbnail} alt="" />
+            </div>
           )}
         </div>
-        <div className="flex justify-between items-center mt-3 w-full max-w-[720px] mx-auto">
-          <div>
-            <div className="text-lg font-extrabold">{playerState?.lesson?.title || 'Lesson'}</div>
-            <div className="text-sm text-gray-600">Section: {courseData.sections.find(s=>s.id===playerState?.sectionId)?.title || ''}</div>
-          </div>
-          <a href="#" className="text-blue-600">Mark Complete</a>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-export default Player
+        {/* INFO + COMPLETE */}
+        {currentLecture && (
+          <div className="bg-white rounded-xl shadow-sm border p-5 flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800">
+                {currentLecture.lectureTitle}
+              </h2>
+              <p className="text-sm text-gray-500">
+                {currentLecture.chapter.chapterTitle}
+              </p>
+            </div>
+            {(() => {
+              const isCompleted = progressData?.lecturesCompleted?.includes(currentLecture.lectureId);
+              return (
+                <button
+                  onClick={() => markComplete(currentLecture.lectureId)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition
+            ${isCompleted
+                      ? "bg-green-100 text-green-700 cursor-default"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                    }`}
+                >
+                  {isCompleted ? "Completed" : "Mark Complete"}
+                </button>
+              );
+            })()}
+
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default Player;

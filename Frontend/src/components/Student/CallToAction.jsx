@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send } from 'lucide-react';
-
+import { toast } from 'react-toastify'
 const CallToAction = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -18,14 +18,15 @@ const CallToAction = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission here
     console.log('Form submitted:', formData);
+    toast.success("message send successfully ! Our team will react out to you at the earlier .")
+
   };
 
   return (
     <section
       id="contact"
-      className="py-20 bg-gradient-to-br from-gray-50 to-blue-50"
+      className="py-20  from-gray-50 to-blue-50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
@@ -189,7 +190,7 @@ const CallToAction = () => {
 
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full  from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <Send className="h-4 w-4" />
                 <span>Send Message</span>

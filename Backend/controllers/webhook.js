@@ -29,7 +29,7 @@ export const clerkWebhook = async (req, res) => {
           email: data.email_addresses[0]?.email_address,
           imgUrl: data.image_url || "",
         });
-        console.log('Saved user to MongoDB:', data.id);
+       
         break;
 
       case "user.updated":

@@ -1,4 +1,4 @@
-import {v2 as cloudinary} from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
 import courseModel from "../models/course.js";
 import { clerkClient } from "@clerk/express";
 import purchaseModel from "../models/purchase.js";
@@ -6,13 +6,13 @@ import UserModel from "../models/user.js";
 
 const updatedToEducator = async (req, res) => {
   try {
-    const { userId } = req.auth(); // ✅ correct & future-proof
+    const { userId } = req.auth(); 
 
     await clerkClient.users.updateUserMetadata(userId, {
       publicMetadata: { role: "educator" },
     });
 
-    return res.json({ message: "User role updated to educator" });
+    return res.json({ success: true, message: "User role updated to educator" });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to update role" });
@@ -21,11 +21,11 @@ const updatedToEducator = async (req, res) => {
 
 export const addCourse = async (req, res) => {
   try {
-    const {courseData} = req.body;
+    const { courseData } = req.body;
     const img = req.file;
     const educatorId = req.auth().userId;
 
-    if(!img){
+    if (!img) {
       return res.status(400).json({ error: "Image file is required" });
     }
 
@@ -38,8 +38,8 @@ export const addCourse = async (req, res) => {
     newCourse.courseThumbnail = imgPath.secure_url;
     await newCourse.save();
 
-    return res.status(201).json({ message: "Course added successfully"});
-  
+    return res.status(201).json({ message: "Course added successfully" });
+
 
   } catch (error) {
     console.error(error);
@@ -70,9 +70,9 @@ const getDashboardData = async (req, res) => {
     const enrolledStudentData = [];
     for (const course of courses) {
       const students = await UserModel.find({
-        id: {$in : course.enrolledStudents},
-        
-      },'name imageUrl');
+        id: { $in: course.enrolledStudents },
+
+      }, 'name imageUrl');
       students.forEach((student) => {
         enrolledStudentData.push({
           courseTitle: course.title,
@@ -80,7 +80,7 @@ const getDashboardData = async (req, res) => {
         });
       });
     }
-    return res.json({status:"success", DashboardData: { totalCourses, totalEarnings, enrolledStudents: enrolledStudentData }});
+    return res.json({ success: true, DashboardData: { totalCourses, totalEarnings, enrolledStudents: enrolledStudentData } });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to fetch dashboard data" });
@@ -99,11 +99,11 @@ const getEnrolledStudents = async (req, res) => {
         course: purchase.courseId
       });
     }
-    return res.json({status:"success", enrolledStudents});
+    return res.json({ success: true, enrolledStudents });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to fetch enrolled students" });
   }
 };
 
-export  {updatedToEducator, getDashboardData, getEnrolledStudents};
+export { updatedToEducator, getDashboardData, getEnrolledStudents };

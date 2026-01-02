@@ -1,90 +1,199 @@
-import React, { useContext, useEffect } from 'react'
-import { Star } from 'lucide-react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Star, PlayCircle } from 'lucide-react';
 import { AppContext } from '../../context/AppContext';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const CourseDetail = () => {
-  const dummyCourse = {
-    id: 'demo-1',
-    title: 'Introduction to Web Development (Sample)',
-    shortDescription: 'A short hands-on sample course to get you started with web development.',
-    description: 'This sample course includes basic HTML, CSS, and JavaScript projects to help you build a foundation.',
-    rating: 4.5,
-    reviews: 120,
-    levels: 3,
-    videos: 12,
-    duration: '4h 30m',
-    image: '/src/assets/logo.png',
-    price: '62.99',
-    discount: 30,
-    highlights: ['Lifetime access with free updates', 'Step-by-step, hands-on project guidance', 'Downloadable resources and source code'],
-    students: 2,
-    sections: [
-      { id: 's1', title: 'Introduction to Data Science', totalDuration: '22 hours', lessons: [{ id: 'l1', title: 'Overview', duration: '10m' }, { id: 'l2', title: 'Setup', duration: '15m' }] },
-      { id: 's2', title: 'Machine Learning Basics', totalDuration: '27 hours, 30 minutes', lessons: [{ id: 'l3', title: 'Regression', duration: '30m' }, { id: 'l4', title: 'Classification', duration: '40m' }] },
-    ],
+  const { id } = useParams();
+  const { backendURL, userData, getToken, navigate } = useContext(AppContext);
+  const [course, setCourse] = useState(null);
+  const [openSection, setOpenSection] = useState(null);
+  const [isAlreadyEnrolled, setIsAlreadyEnrolled] = useState(false);
+
+  //fetchcourses
+  const fetchCourseData = async () => {
+    try {
+      const { data } = await axios.get(`${backendURL}/courses/${id}`);
+      if (data.success) {
+        setCourse(data.course);
+        console.log(data.course);
+        document.title = `${data.course.courseTitle} - SmartLearn`;
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
-  const [course,setCourse] = React.useState(dummyCourse);
-  const {allCourses, isEnrolled} = useContext(AppContext);
-  const { id } = useParams();
-  const [openSection, setOpenSection] = React.useState(null);
-  
-  useEffect(() => {
-    let selected = course;
-    if (allCourses && allCourses.length) {
-      selected = id ? allCourses.find(c => c.id === id) : allCourses[0];
-      if (selected) setCourse(selected);
-    }
-    document.title = `${(selected && selected.title) || course.title} - SmartLearn`;
-  }, [allCourses, id]);
+  const enrollCourse = async () => {
+    try {
+      if (!userData) return toast.warn('Please login to enroll');
+      if (isAlreadyEnrolled) return toast.info('Already enrolled');
 
-  const ratingStars = () => {
-    const r = Math.round(course.rating || 0);
+      const token = await getToken();
+      const { data } = await axios.post(
+        `${backendURL}/user/purchase`,
+        { courseId: course._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        window.location.replace(data.session_url);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  // RATING LOGIC  
+  const calculateRating = () => {
+    if (!course?.courseRating?.length) return 0;
+    const total = course.courseRating.reduce((sum, r) => sum + r.rating, 0);
+    return (total / course.courseRating.length).toFixed(1);
+  };
+
+  const renderStars = () => {
+    const rating = Math.round(calculateRating());
     return Array.from({ length: 5 }).map((_, i) => (
-      <Star key={i} className={`h-4 w-4 ${i < r ? 'text-yellow-400' : 'text-gray-300'}`} />
+      <Star
+        key={i}
+        size={16}
+        className={
+          i < rating
+            ? 'text-yellow-400 fill-yellow-400'
+            : 'text-gray-300'
+        }
+      />
     ));
+  };
+
+  useEffect(() => {
+    fetchCourseData();
+  }, [id]);
+
+
+  useEffect(() => {
+    if (userData && course) {
+      setIsAlreadyEnrolled(userData.enrolledCourses?.includes(course._id));
+    }
+  }, [userData, course]);
+
+  
+
+  if (!course) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        Loading...
+      </div>
+    );
   }
 
-  
-  return (
-    <div className="py-12 bg-emerald-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-3 gap-8">
-        {/* Left content */}
-        <div className="lg:col-span-2">
-          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight mb-4">{course.title}</h1>
-          <p className="text-lg text-gray-700 mb-2">{course.shortDescription}</p>
-          <p className="text-sm text-gray-500 mb-4">{course.description}</p>
+  //discounted price calculation
+  const discountedPrice =
+    course.coursePrice -
+    (course.coursePrice * course.discount) / 100;
 
-          <div className="flex items-center gap-4 text-sm text-gray-600 mb-6">
-            <div className="flex items-center gap-1">{ratingStars()}</div>
-            <div className="text-blue-600">({course.reviews || 0} rating)</div>
-            <div className="text-gray-600">· {course.students || 2} students</div>
-            <div className="text-gray-600">· Course by <a className="text-blue-600 underline">Author</a></div>
+  return course ? (
+    <div className="bg-gray-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-3 gap-10">
+
+        {/* left content  */}
+        <div className="lg:col-span-2">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+            {course.courseTitle}
+          </h1>
+
+          <p className="text-gray-700 mb-6 leading-relaxed">
+            {course.courseDescription}
+          </p>
+
+          <div className="flex flex-wrap items-center gap-6 text-sm mb-8">
+            <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full">
+              {renderStars()}
+              <span className="text-yellow-700 font-semibold">
+                {calculateRating()}
+              </span>
+            </div>
+
+            <span className="text-gray-600">
+              {course.enrolledStudents?.length || 0} students
+            </span>
+
+            <span className="text-gray-600">
+              Course by{' '}
+              <span className="text-blue-600 font-medium">
+                {course.educator?.name || 'Instructor'}
+              </span>
+            </span>
           </div>
 
-          <h3 className="text-xl font-semibold mb-3">Course Structure</h3>
-          <div className="space-y-3 mb-8">
-            {(course.sections || []).map(section => (
-              <div key={section.id} className="bg-white border rounded-md">
+          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+            Course Content
+          </h3>
+
+          <div className="space-y-4">
+            {course.courseContent?.map(chapter => (
+              <div
+                key={chapter.chapterid}
+                className="bg-white border rounded-xl overflow-hidden"
+              >
                 <button
-                  onClick={() => setOpenSection(openSection === section.id ? null : section.id)}
-                  className="w-full px-4 py-3 flex justify-between items-center text-left"
+                  onClick={() =>
+                    setOpenSection(
+                      openSection === chapter.chapterid
+                        ? null
+                        : chapter.chapterid
+                    )
+                  }
+                  className="w-full px-5 py-4 flex justify-between items-center bg-gray-100 hover:bg-gray-200 transition"
                 >
-                  <div className="flex flex-col text-sm">
-                    <span className="font-medium">{section.title}</span>
-                    <span className="text-gray-500 text-xs">{section.lessons.length} lectures - {section.totalDuration || '—'}</span>
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {chapter.chapterTitle}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {chapter.chapterContent.length} lectures
+                    </p>
                   </div>
-                  <div className="text-sm text-gray-500">{openSection === section.id ? '–' : '+'}</div>
+                  <span className="text-lg font-bold text-gray-600">
+                    {openSection === chapter.chapterid ? '−' : '+'}
+                  </span>
                 </button>
 
-                {openSection === section.id && (
-                  <div className="px-4 pb-4 pt-2">
-                    {section.lessons.map(lesson => (
-                      <div key={lesson.id} className="py-2 border-b last:border-b-0">
-                        <div className="flex justify-between items-center text-sm">
-                          <div>{lesson.title}</div>
-                          <div className="text-gray-500 text-xs">{lesson.duration}</div>
+                {openSection === chapter.chapterid && (
+                  <div className="divide-y">
+                    {chapter.chapterContent.map(lecture => (
+                      <div
+                        key={lecture.lectureId}
+                        className="px-5 py-3 flex justify-between items-center hover:bg-gray-50"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-800">
+                            {lecture.lectureTitle}
+                          </span>
+
+                          <div className="flex items-center gap-4 mt-1 text-xs text-gray-500">
+                            <span>{lecture.lectureDuration} min</span>
+
+                            {lecture.isPreviewFree && lecture.lectureUrl ? (
+                              <a
+                                href={lecture.lectureUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-blue-600 hover:underline font-semibold"
+                              >
+                                <PlayCircle size={14} />
+                                Preview
+                              </a>
+                            ) : (
+                              <span className="text-gray-400">🔒 Locked</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -93,45 +202,60 @@ const CourseDetail = () => {
               </div>
             ))}
           </div>
-
-          <h3 className="text-xl font-semibold mb-3">Course Description</h3>
-          <div className="bg-white p-6 rounded-2xl shadow mb-8">
-            <h4 className="font-bold text-lg mb-2">Unlock the Power of Data</h4>
-            <p className="text-gray-700 leading-relaxed">{course.description}</p>
-          </div>
         </div>
 
-        {/* Right card */}
+        {/* RIGHT SIDEBAR  */}
         <aside className="lg:col-span-1">
-          <div className="sticky top-24 bg-white rounded-2xl p-6 shadow">
-            <img src={course.image} alt={course.title} className="w-full h-44 object-cover rounded-md mb-4" />
+          <div className="sticky top-24 bg-white rounded-2xl p-6 shadow-lg">
+            <img
+              src={course.courseThumbnail}
+              alt={course.courseTitle}
+              className="w-full h-48 object-cover rounded-lg mb-5"
+            />
 
-            <div className="text-sm text-red-500 mb-1">5 days left at this price!</div>
-            <div className="flex items-end gap-3 mb-2">
-              <div className="text-3xl font-extrabold text-gray-900">${course.price}</div>
-              <div className="text-sm text-gray-400 line-through">$89.99</div>
-              <div className="ml-auto text-sm text-gray-600">30% off</div>
+            <div className="flex items-end gap-3 mb-5">
+              <span className="text-3xl font-bold text-gray-900">
+                ${discountedPrice.toFixed(2)}
+              </span>
+              {course.discount > 0 && (
+                <>
+                  <span className="line-through text-gray-400">
+                    ${course.coursePrice}
+                  </span>
+                  <span className="text-green-600 text-sm font-semibold">
+                    {course.discount}% OFF
+                  </span>
+                </>
+              )}
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
-              <div className="flex items-center gap-1 text-yellow-400">{ratingStars()}</div>
-              <div>{course.rating || 0}</div>
-              <div className="border-l pl-3">{course.duration} </div>
-              <div className="border-l pl-3">{course.videos} lessons</div>
-            </div>
+            <button
+              onClick={() => {
+                if (isAlreadyEnrolled) {
+                  navigate(`/player/${course._id}`);
+                } else {
+                  enrollCourse();
+                }
+              }}
+              className={`w-full py-3 rounded-lg font-semibold text-lg transition ${isAlreadyEnrolled
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
+                }`}
+            >
+              {isAlreadyEnrolled ? 'Go to Course' : 'Enroll Now'}
+            </button>
 
-            <button onClick={() => console.log('Enroll clicked')} className="w-full bg-blue-600 text-white py-3 rounded-md font-medium mb-4">{isEnrolled ? 'Enrolled' : 'Enroll Now'}</button>
 
-            <h4 className="font-semibold mb-2">What's in the course?</h4>
-            <ul className="list-disc list-inside text-gray-700 space-y-1 mb-4">
-              {(course.highlights || []).slice(0,5).map((h, i) => <li key={i}>{h}</li>)}
+            <ul className="mt-6 text-sm text-gray-600 space-y-2">
+              <li>✔ Lifetime access</li>
+              <li>✔ Certificate of completion</li>
+              <li>✔ Learn at your own pace</li>
             </ul>
           </div>
         </aside>
       </div>
     </div>
-  )
+  ) : <Loading />
+};
 
-}
-
-export default CourseDetail
+export default CourseDetail;

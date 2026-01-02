@@ -1,41 +1,12 @@
 import { createContext, useState, useEffect } from "react";
-export const  AppContext = createContext();
+export const AppContext = createContext();
 import { useNavigate } from "react-router-dom";
 import { apiService } from "../assets/assests";
 import { useAuth, useUser } from "@clerk/clerk-react";
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
-export const AppContextProvider =  (props) => {
-    const navigate = useNavigate();
-    const [faqs, setFaqs] = useState([]);
-    const [isEducator, setIsEducator] = useState(true);
-    const [isEnrolled, setIsEnrolled] = useState(false);
-
-    const {getToken} = useAuth();
-    const {user} = useUser();
-    const logToken = async () => {
-        console.log(await getToken());
-    };
-
-    useEffect(() => {
-        if (user ){
-            logToken();
-        }
-    }, [user]);
-    
-    useEffect(() => {
-        let mounted = true;
-        (async () => {
-            try {
-                const res = await apiService.getFAQs();
-                if (mounted) setFaqs(res || []);
-            } catch (err) {
-                if (mounted) setFaqs([]);
-            }
-        })();
-        return () => { mounted = false };
-    }, []);
-
-    // Mock courses for components that expect courses in context
+export const AppContextProvider = (props) => {
     const mockCourses = [
         {
             id: 'c1',
@@ -58,16 +29,110 @@ export const AppContextProvider =  (props) => {
             ],
         }
     ];
-    const [allCourses, setAllCourses] = useState(mockCourses);
+
+    const navigate = useNavigate();
+    const [faqs, setFaqs] = useState([]);
+    const [isEducator, setIsEducator] = useState(false);
+    const [allCourses, setAllCourses] = useState([]);
+    const [userData, setUserData] = useState(null);
     const [enrolledCourses, setEnrolledCourses] = useState(mockCourses);
+    const { getToken } = useAuth();
+    const { user } = useUser();
+
+    const backendURL = import.meta.env.VITE_BACKEND_URL;
+
+
+    const calculateRating = (course) => {
+        if (course.courseRatings.length === 0) {
+            return 0;
+        }
+        let totalRating = 0;
+        course.courseRatings.forEach(rating => {
+            totalRating += rating.rating
+        })
+        return Math.floor(totalRating / course.courseRatings.length)
+    }
+
+
+    const fetctAllCourses = async () => {
+        try {
+            const { data } = await axios.get(backendURL + '/courses/all');
+            if (data.success) {
+                setAllCourses(data.courses);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            toast.error(err.message);
+        }
+    }
+
+    const fetchUserEnrolledCourses = async () => {
+        try {
+
+            const token = await getToken();
+            const { data } = await axios.get(backendURL + '/user/enrolled-courses', {
+                headers:
+                    { Authorization: `Bearer ${token}` }
+            });
+            if (data.success) {
+                setEnrolledCourses(data.enrolledCourses.reverse());
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            toast.error(err.message);
+        }
+    }
+
+    const fetchUserData = async () => {
+        if (user.publicMetadata.role === 'educator')
+            setIsEducator(true);
+
+        try {
+            const token = await getToken();
+            const { data } = await axios.get(`${backendURL}/user/data`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (data.success) {
+                setUserData(data.user);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (err) {
+            toast.error(err.message);
+        }
+    };
+    
+    useEffect(() => {
+        fetctAllCourses();
+        fetchUserEnrolledCourses();
+    }, []);
+
+    useEffect(() => {
+        if (user) fetchUserData();
+    }, [user]);
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const res = await apiService.getFAQs();
+                if (mounted) setFaqs(res || []);
+            } catch (err) {
+                if (mounted) setFaqs([]);
+            }
+        })();
+        return () => { mounted = false };
+    }, []);
+
     const value = {
-        isEducator, navigate,
-        faqs,
-        isEnrolled,setIsEnrolled,
-        allCourses,
-        setAllCourses,
-        setIsEducator,
-        enrolledCourses, setEnrolledCourses
+        isEducator, setIsEducator,
+        allCourses, setAllCourses,
+        enrolledCourses, setEnrolledCourses, fetchUserEnrolledCourses,
+        backendURL, getToken, navigate, faqs,
+        userData, fetchUserData
     };
     return (
         <AppContext.Provider value={value}>
