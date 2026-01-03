@@ -84,23 +84,70 @@ const getDashboardData = async (req, res) => {
   }
 };
 
+// const getEnrolledStudents = async (req, res) => {
+//   const educatorId = req.auth().userId;
+//  const educatorUser = await UserModel.findOne({ id: educatorId });
+//   try {
+//     const courses = await courseModel.find({ educator: educatorUser._id});
+//     const purchases = await purchaseModel.find({ courseId: { $in: courses.map(course => course._id) }, status: "completed" }).populate('userId', 'name imageUrl').populate('courseId', 'title');
+//     const enrolledStudents = [];
+//     for (const purchase of purchases) {
+//       enrolledStudents.push({
+//         student: purchase.userId,
+//         course: purchase.courseId
+//       });
+//     }
+//     return res.json({ success: true, enrolledStudents });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Failed to fetch enrolled students" });
+//   }
+// };
 const getEnrolledStudents = async (req, res) => {
-  const educatorId = req.auth().userId;
   try {
-    const courses = await courseModel.find({ educator: educatorId });
-    const purchases = await purchaseModel.find({ courseId: { $in: courses.map(course => course._id) }, status: "completed" }).populate('userId', 'name imageUrl').populate('courseId', 'title');
-    const enrolledStudents = [];
-    for (const purchase of purchases) {
-      enrolledStudents.push({
-        student: purchase.userId,
-        course: purchase.courseId
-      });
+    const educatorId = req.auth().userId;
+
+    const educatorUser = await UserModel.findOne({ id: educatorId });
+    if (!educatorUser) {
+      return res.status(404).json({ success: false, message: "Educator not found" });
     }
+
+    const courses = await courseModel
+      .find({ educator: educatorUser._id })
+      .select("_id courseTitle");
+
+    const courseMap = Object.fromEntries(
+      courses.map(c => [c._id.toString(), c.courseTitle])
+    );
+
+    // Get purchases for these courses
+    const purchases = await purchaseModel
+      .find({
+        courseId: { $in: courses.map(c => c._id) },
+        status: "completed"
+      });
+
+    // Map purchases to include student info manually
+    const enrolledStudents = await Promise.all(
+      purchases.map(async (purchase) => {
+        const user = await UserModel.findOne({ id: purchase.userId }); // lookup by string ID
+        return {
+          _id: purchase._id,
+          studentName: user?.name || "Unknown",
+          studentThumbnail: user?.imgUrl || "",
+          courseTitle: courseMap[purchase.courseId.toString()],
+          enrolledAt: purchase.createdAt
+        };
+      })
+    );
+
     return res.json({ success: true, enrolledStudents });
+
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Failed to fetch enrolled students" });
+    return res.status(500).json({ success: false, message: "Failed to fetch enrolled students" });
   }
 };
+
 
 export { updatedToEducator, getDashboardData, getEnrolledStudents };

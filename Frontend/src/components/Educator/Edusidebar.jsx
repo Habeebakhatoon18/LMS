@@ -10,7 +10,7 @@ const Edusidebar = () => {
     { name: 'Dashboard', path: '/educator/dashboard' },
     { name: 'Add Courses', path: '/educator/add-course' },
     { name: 'My Course', path: '/educator/my-courses' },
-    { name: 'Students enrolled', path: '/educator/students-enroll/:courseId' },
+    { name: 'Students enrolled', path: '/educator/students-enroll' },
   ];
   return isEducator && (
     (
