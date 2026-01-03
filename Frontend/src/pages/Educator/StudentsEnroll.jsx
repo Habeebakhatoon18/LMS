@@ -40,7 +40,6 @@ const StudentsEnroll = () => {
         {headers : {Authorization : `Bearer ${token}`}});
       if (data.success) {
         setStudentsEnrolled(data.enrolledStudents);
-        console.log(data.enrolledStudents);
       } else {
         toast.error(data.message);
       }

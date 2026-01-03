@@ -18,7 +18,6 @@ const CourseDetail = () => {
       const { data } = await axios.get(`${backendURL}/courses/${id}`);
       if (data.success) {
         setCourse(data.course);
-        console.log(data.course);
         document.title = `${data.course.courseTitle} - SmartLearn`;
       } else {
         toast.error(data.message);
@@ -34,6 +33,7 @@ const CourseDetail = () => {
       if (isAlreadyEnrolled) return toast.info('Already enrolled');
 
       const token = await getToken();
+      
       const { data } = await axios.post(
         `${backendURL}/user/purchase`,
         { courseId: course._id },
@@ -41,7 +41,7 @@ const CourseDetail = () => {
       );
 
       if (data.success) {
-        window.location.replace(data.session_url);
+        window.location.replace(data.url);
       } else {
         toast.error(data.message);
       }
@@ -73,8 +73,10 @@ const CourseDetail = () => {
   };
 
   useEffect(() => {
+    if(id)
     fetchCourseData();
-  }, [id]);
+  
+},[id]);
 
 
   useEffect(() => {

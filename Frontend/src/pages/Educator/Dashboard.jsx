@@ -1,35 +1,50 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { useState } from 'react';
 import Loading from '../../components/Student/Loading';
+import { AppContext } from '../../context/AppContext';
+import {toast} from 'react-toastify';
+import axios from 'axios';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const {backendURL, getToken} = useContext(AppContext);
 
   const assets = {
     patients_icon: '/src/assets/logo.png',
     appointment_icon: '/src/assets/logo.png',
     earning_icon: '/src/assets/logo.png',
   };
-  const dummyData = {
-    enrolledStudentsData: [
-      { id: 's1', name: 'Alice Johnson', course: 'React for Beginners', enrolledAt: '2025-11-01' },
-      { id: 's2', name: 'Bob Smith', course: 'Advanced Node.js', enrolledAt: '2025-10-21' },
-      { id: 's3', name: 'Carlos Lopez', course: 'Data Science 101', enrolledAt: '2025-09-14' },
-      { id: 's4', name: 'Diana Prince', course: 'Intro to Python', enrolledAt: '2025-12-03' },
-    ],
-    totalcourses: 5,
-    totalEarnings: 1240.5,
-    // optional: list of courses (useful elsewhere)
-    courses: [
-      { id: 'c1', title: 'React for Beginners', students: 120, price: 39.99 },
-      { id: 'c2', title: 'Advanced Node.js', students: 85, price: 49.99 },
-      { id: 'c3', title: 'Data Science 101', students: 60, price: 59.99 },
-      { id: 'c4', title: 'Intro to Python', students: 200, price: 29.99 },
-      { id: 'c5', title: 'UX Fundamentals', students: 40, price: 19.99 },
-    ],
-  };
+  // const dummyData = {
+  //   enrolledStudentsData: [
+  //     { id: 's1', name: 'Alice Johnson', course: 'React for Beginners', enrolledAt: '2025-11-01' },
+  //     { id: 's2', name: 'Bob Smith', course: 'Advanced Node.js', enrolledAt: '2025-10-21' },
+  //     { id: 's3', name: 'Carlos Lopez', course: 'Data Science 101', enrolledAt: '2025-09-14' },
+  //     { id: 's4', name: 'Diana Prince', course: 'Intro to Python', enrolledAt: '2025-12-03' },
+  //   ],
+  //   totalcourses: 5,
+  //   totalEarnings: 1240.5,
+  //   courses: [
+  //     { id: 'c1', title: 'React for Beginners', students: 120, price: 39.99 },
+  //     { id: 'c2', title: 'Advanced Node.js', students: 85, price: 49.99 },
+  //     { id: 'c3', title: 'Data Science 101', students: 60, price: 59.99 },
+  //     { id: 'c4', title: 'Intro to Python', students: 200, price: 29.99 },
+  //     { id: 'c5', title: 'UX Fundamentals', students: 40, price: 19.99 },
+  //   ],
+  // };
   const fetchDashboardData = async () => {
-    setDashboardData(dummyData);
+     try {
+          const token = await getToken();
+          const { data } = await axios.get(`${backendURL}/educator/dashboard`, 
+            {headers : {Authorization : `Bearer ${token}`}});
+          if (data.success) {
+            setDashboardData(data.DashboardData);
+            console.log(data.DashboardData);
+          } else {
+            toast.error(data.message);
+          }
+        } catch (err) {
+          toast.error(err.message);
+        }
   }
 
   useEffect(() => {
@@ -45,7 +60,7 @@ const Dashboard = () => {
             <img src={assets.patients_icon} alt="patients_icon" className='w-10'/>
             <div>
               <p className="text-2xl font-medium text-gray-600">
-                {dashboardData.enrolledStudentsData.length || 0}
+                {dashboardData.enrolledStudents.length || 0}
               </p>
               <p className="text-base text-gray-500">Total Enrolments</p>
             </div>
@@ -54,7 +69,7 @@ const Dashboard = () => {
             <img src={assets.appointment_icon} alt="patients_icon" className='w-10' />
             <div>
               <p className="text-2xl font-medium text-gray-600">
-                {dashboardData.totalcourses || 0}
+                {dashboardData.totalCourses || 0}
               </p>
               <p className="text-base text-gray-500">Total Courses</p>
             </div>
@@ -85,7 +100,7 @@ const Dashboard = () => {
               </thead>
 
               <tbody className="text-sm text-gray-500">
-                {dashboardData.enrolledStudentsData.map((item, index) => (
+                {dashboardData.enrolledStudents.map((item, index) => (
                   <tr
                     key={index}
                     className="border-b border-gray-500/20"
@@ -96,14 +111,13 @@ const Dashboard = () => {
 
                     <td className="md:px-4 px-2 py-3 flex items-center space-x-3">
                       <img
-                        src={  'https://via.placeholder.com/150'}
-                        // src={item.student.imageUrl}
+                       
+                         src={item.student.imgUrl}
                         alt="Profile"
                         className="w-9 h-9 rounded-full"
                       />
                       <span className="truncate">
-                        student name
-                        {/* {item.student.name} */}
+                        {item.student.name}
                       </span>
                     </td>
 

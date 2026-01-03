@@ -83,7 +83,7 @@ export const stripeWebhook = async (req, res) => {
       const userData = await UserModel.findOne({id:purchaseData.userId});
       const courseData = await CourseModel.findById(purchaseData.courseId.toString())
 
-      courseData.enrolledStudents.push(userData)
+      courseData.enrolledStudents.push(userData._id)
       // courseData.enrolledStudents.push(userData.id)
       await courseData.save()
 

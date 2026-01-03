@@ -58,21 +58,26 @@ export const getEducatorCourses = async (req, res) => {
 const getDashboardData = async (req, res) => {
   try {
     const educatorId = req.auth().userId;
-    const courses = await courseModel.find({ educator: educatorId });
+   // const courses = await courseModel.find({ educator: educatorId });
+   const educatorUser = await UserModel.findOne({ id:educatorId });
+    const courses = await courseModel.find({ educator: educatorUser._id });
+    
     const totalCourses = courses.length;
 
     const purchases = await purchaseModel.find({ courseId: { $in: courses.map(course => course._id) }, status: "completed" });
     const totalEarnings = purchases.reduce((sum, purchase) => sum + purchase.amount, 0);
 
     const enrolledStudentData = [];
+    
     for (const course of courses) {
       const students = await UserModel.find({
         id: { $in: course.enrolledStudents },
 
-      }, 'name imageUrl');
+      }, 'name imgUrl');
+      
       students.forEach((student) => {
         enrolledStudentData.push({
-          courseTitle: course.title,
+          courseTitle: course.courseTitle,
           student
         });
       });
@@ -84,25 +89,6 @@ const getDashboardData = async (req, res) => {
   }
 };
 
-// const getEnrolledStudents = async (req, res) => {
-//   const educatorId = req.auth().userId;
-//  const educatorUser = await UserModel.findOne({ id: educatorId });
-//   try {
-//     const courses = await courseModel.find({ educator: educatorUser._id});
-//     const purchases = await purchaseModel.find({ courseId: { $in: courses.map(course => course._id) }, status: "completed" }).populate('userId', 'name imageUrl').populate('courseId', 'title');
-//     const enrolledStudents = [];
-//     for (const purchase of purchases) {
-//       enrolledStudents.push({
-//         student: purchase.userId,
-//         course: purchase.courseId
-//       });
-//     }
-//     return res.json({ success: true, enrolledStudents });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ error: "Failed to fetch enrolled students" });
-//   }
-// };
 const getEnrolledStudents = async (req, res) => {
   try {
     const educatorId = req.auth().userId;
