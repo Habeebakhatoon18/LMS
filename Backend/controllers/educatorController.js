@@ -35,13 +35,7 @@ export const addCourse = async (req, res) => {
     parsedCourseData.courseThumbnail = imgPath.secure_url;
     const newCourse = await courseModel.create(parsedCourseData);
 
-
-    // const imgPath = await cloudinary.uploader.upload(img.path);
-    // newCourse.courseThumbnail = imgPath.secure_url;
-    // await newCourse.save();
-
     return res.json({success:true, message: "Course added successfully" });
-
 
   } catch (error) {
     console.error(error);
@@ -52,8 +46,9 @@ export const addCourse = async (req, res) => {
 export const getEducatorCourses = async (req, res) => {
   try {
     const educatorId = req.auth().userId;
-    const courses = await courseModel.find({ educator: educatorId });
-    return res.status(200).json(courses);
+    const educatorUser = await UserModel.findOne({ id:educatorId });
+    const courses = await courseModel.find({ educator: educatorUser._id });
+    return res.json({success :true, courses});
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to fetch courses" });

@@ -127,6 +127,7 @@ const AddCourse = () => {
     formData.append('courseData',JSON.stringify(payload));
     formData.append('image', image);
     const token = await getToken();
+    
     const {data} = await axios.post(`${backendURL}/educator/add-course`,
       formData,
        {headers : {Authorization : `Bearer ${token}`}});

@@ -38,7 +38,7 @@ export const AppContextProvider = (props) => {
     const [enrolledCourses, setEnrolledCourses] = useState(mockCourses);
     const { getToken } = useAuth();
     const { user } = useUser();
-
+    const currency = import.meta.env.VITE_CURRENCY
     const backendURL = import.meta.env.VITE_BACKEND_URL;
 
 
