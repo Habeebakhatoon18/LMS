@@ -73,10 +73,10 @@ const CourseDetail = () => {
   };
 
   useEffect(() => {
-    if(id)
-    fetchCourseData();
-  
-},[id]);
+    if(id) {
+      fetchCourseData();
+    }
+  }, [id, backendURL]);
 
 
   useEffect(() => {
@@ -90,7 +90,10 @@ const CourseDetail = () => {
   if (!course) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
-        Loading...
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
       </div>
     );
   }
@@ -101,12 +104,12 @@ const CourseDetail = () => {
     (course.coursePrice * course.discount) / 100;
 
   return course ? (
-    <div className="bg-gray-50 py-12">
-      <div className="max-w-7xl mx-auto px-4 grid lg:grid-cols-3 gap-10">
+    <div className="bg-gray-50 py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-3 gap-6 md:gap-10">
 
         {/* left content  */}
         <div className="lg:col-span-2">
-          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold text-gray-900 mb-4">
             {course.courseTitle}
           </h1>
 
@@ -114,7 +117,7 @@ const CourseDetail = () => {
             {course.courseDescription}
           </p>
 
-          <div className="flex flex-wrap items-center gap-6 text-sm mb-8">
+          <div className="flex flex-wrap items-center gap-4 md:gap-6 text-xs md:text-sm mb-6 md:mb-8">
             <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-full">
               {renderStars()}
               <span className="text-yellow-700 font-semibold">
@@ -134,7 +137,7 @@ const CourseDetail = () => {
             </span>
           </div>
 
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">
+          <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">
             Course Content
           </h3>
 
@@ -207,8 +210,8 @@ const CourseDetail = () => {
         </div>
 
         {/* RIGHT SIDEBAR  */}
-        <aside className="lg:col-span-1">
-          <div className="sticky top-24 bg-white rounded-2xl p-6 shadow-lg">
+        <aside className="lg:col-span-1 order-first lg:order-last">
+          <div className="sticky top-24 bg-white rounded-2xl p-4 md:p-6 shadow-lg">
             <img
               src={course.courseThumbnail}
               alt={course.courseTitle}

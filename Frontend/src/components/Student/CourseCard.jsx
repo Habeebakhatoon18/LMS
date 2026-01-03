@@ -1,4 +1,4 @@
-import { Star, User, BarChart3 } from 'lucide-react';
+import { Star, User } from 'lucide-react';
 
 const CourseCard = ({ course }) => {
   

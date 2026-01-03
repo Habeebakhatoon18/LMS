@@ -11,7 +11,7 @@ const Footer = () => {
           <div className="md:col-span-1">
             <div className="flex items-center space-x-2 mb-4">
               <img
-                src="src/assets/logo.png"
+                src="/logo.png"
                 alt="logo"
                 className="h-8 w-auto rounded-lg object-contain bg-white"
               />

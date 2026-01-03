@@ -1,7 +1,6 @@
 import React from 'react';
-import { ArrowRight, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import SearchBar from './SearchBar';
 
 const Hero = () => {
   const navigate = useNavigate();

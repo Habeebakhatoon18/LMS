@@ -7,7 +7,7 @@ import axios from 'axios';
 
 const MyCourses = () => {
   const [courses, setCourses] = useState([]);
-  const { backendURL, getToken,currency } = useContext(AppContext);
+  const { backendURL, getToken } = useContext(AppContext);
 
   const fetchEducatorCourses = async () => {
     try {
@@ -26,72 +26,76 @@ const MyCourses = () => {
 
   useEffect(() => {
     fetchEducatorCourses();
-  }, []);
+  }, [backendURL, getToken]);
 
   return courses ? (
-    <div>
-      <div className="w-full p-4 m-4">
-        <h2 className="pb-4 text-lg font-bold">My Courses</h2>
+    <div className="w-full p-4 md:p-6">
+      <h2 className="pb-4 text-lg md:text-xl font-bold">My Courses</h2>
 
-        <div className="flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md bg-white border border-gray-500/20">
-          <table className="md:table-auto table-fixed w-full overflow-hidden">
-            <thead className="text-gray-900 border-b border-gray-500/20 text-sm text-left">
-              <tr>
-                <th className="px-4 py-3 font-semibold truncate">
-                  All Courses
-                </th>
-                <th className="px-4 py-3 font-semibold truncate">
-                  Earnings
-                </th>
-                <th className="px-4 py-3 font-semibold truncate">
-                  Students
-                </th>
-                <th className="px-4 py-3 font-semibold truncate">
-                  Published On
-                </th>
-              </tr>
-            </thead>
-            <tbody className="text-sm text-gray-500">
-              {courses.map((course) => (
-                <tr
-                  key={course._id}
-                  className="border-b border-gray-500/20"
-                >
-                  <td className="md:px-4 pl-2 md:pl-4 py-3 flex items-center space-x-3 truncate">
+      <div className="w-full overflow-x-auto rounded-md bg-white border border-gray-500/20">
+        <table className="table-fixed w-full">
+          <colgroup>
+            <col className="w-[40%]" />
+            <col className="w-[20%]" />
+            <col className="w-[15%]" />
+            <col className="w-[25%]" />
+          </colgroup>
+          <thead className="text-gray-900 border-b border-gray-500/20 text-xs md:text-sm text-left">
+            <tr>
+              <th className="px-2 md:px-4 py-3 font-semibold">
+                All Courses
+              </th>
+              <th className="px-2 md:px-4 py-3 font-semibold">
+                Earnings
+              </th>
+              <th className="px-2 md:px-4 py-3 font-semibold">
+                Students
+              </th>
+              <th className="px-2 md:px-4 py-3 font-semibold">
+                Published On
+              </th>
+            </tr>
+          </thead>
+          <tbody className="text-xs md:text-sm text-gray-500">
+            {courses.map((course) => (
+              <tr
+                key={course._id}
+                className="border-b border-gray-500/20"
+              >
+                <td className="px-2 md:px-4 py-3">
+                  <div className="flex items-center space-x-2 md:space-x-3 min-w-0">
                     <img
                       src={course.courseThumbnail}
                       alt="Course Image"
-                      className="w-16"
+                      className="w-12 h-12 md:w-16 md:h-16 object-cover rounded flex-shrink-0"
                     />
-                    <span className="truncate hidden md:block">
+                    <span className="truncate block min-w-0">
                       {course.courseTitle}
                     </span>
-                  </td>
+                  </div>
+                </td>
 
-                  <td className="px-4 py-3">
-                    {currency}{' '}
-                    {Math.floor(
-                      course.enrolledStudents.length *
-                      (course.coursePrice -
-                        (course.discount * course.coursePrice) / 100)
-                    )}
-                  </td>
+                <td className="px-2 md:px-4 py-3 whitespace-nowrap">
+                  ${Math.floor(
+                    course.enrolledStudents.length *
+                    (course.coursePrice -
+                      (course.discount * course.coursePrice) / 100)
+                  )}
+                </td>
 
-                  <td className="px-4 py-3">
-                    {course.enrolledStudents.length}
-                  </td>
+                <td className="px-2 md:px-4 py-3 whitespace-nowrap">
+                  {course.enrolledStudents.length}
+                </td>
 
-                  <td className="px-4 py-3">
-                    {new Date(course.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+                <td className="px-2 md:px-4 py-3 whitespace-nowrap">
+                  {new Date(course.createdAt).toLocaleDateString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
 
-          </table>
-        </div>
+        </table>
       </div>
-
     </div>
   ) : <Loading />;
 }

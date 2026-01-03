@@ -54,7 +54,7 @@ export const AppContextProvider = (props) => {
     }
 
 
-    const fetctAllCourses = async () => {
+    const fetchAllCourses = async () => {
         try {
             const { data } = await axios.get(backendURL + '/courses/all');
             if (data.success) {
@@ -106,9 +106,11 @@ export const AppContextProvider = (props) => {
     };
     
     useEffect(() => {
-        fetctAllCourses();
-        fetchUserEnrolledCourses();
-    }, []);
+        fetchAllCourses();
+        if (user) {
+            fetchUserEnrolledCourses();
+        }
+    }, [user]);
 
     useEffect(() => {
         if (user) fetchUserData();

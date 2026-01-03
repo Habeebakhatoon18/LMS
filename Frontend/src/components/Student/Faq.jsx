@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Plus, X, ArrowRight } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { AppContext } from '../../context/AppContext';
 
 const FAQSection = () => {
   const { faqs, navigate } = React.useContext(AppContext);
-  const [openFAQs, setOpenFAQs] = useState(new Set(['']));
+  const [openFAQs, setOpenFAQs] = useState(new Set());
 
   const toggleFAQ = (id) => {
     const newOpenFAQs = new Set(openFAQs);

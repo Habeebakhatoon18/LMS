@@ -19,7 +19,8 @@ const CallToAction = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
-    toast.success("message send successfully ! Our team will react out to you at the earlier .")
+    toast.success("Message sent successfully! Our team will reach out to you at the earliest.")
+    setFormData({ name: '', email: '', subject: '', message: '' });
 
   };
 
@@ -190,7 +191,7 @@ const CallToAction = () => {
 
               <button
                 type="submit"
-                className="w-full  from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center justify-center space-x-2"
+                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-all duration-200 flex items-center justify-center space-x-2"
               >
                 <Send className="h-4 w-4" />
                 <span>Send Message</span>

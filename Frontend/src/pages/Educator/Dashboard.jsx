@@ -3,34 +3,14 @@ import { useState } from 'react';
 import Loading from '../../components/Student/Loading';
 import { AppContext } from '../../context/AppContext';
 import {toast} from 'react-toastify';
+import { FaUserGraduate, FaBook, FaDollarSign } from 'react-icons/fa';
+
 import axios from 'axios';
 
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const {backendURL, getToken} = useContext(AppContext);
 
-  const assets = {
-    patients_icon: '/src/assets/logo.png',
-    appointment_icon: '/src/assets/logo.png',
-    earning_icon: '/src/assets/logo.png',
-  };
-  // const dummyData = {
-  //   enrolledStudentsData: [
-  //     { id: 's1', name: 'Alice Johnson', course: 'React for Beginners', enrolledAt: '2025-11-01' },
-  //     { id: 's2', name: 'Bob Smith', course: 'Advanced Node.js', enrolledAt: '2025-10-21' },
-  //     { id: 's3', name: 'Carlos Lopez', course: 'Data Science 101', enrolledAt: '2025-09-14' },
-  //     { id: 's4', name: 'Diana Prince', course: 'Intro to Python', enrolledAt: '2025-12-03' },
-  //   ],
-  //   totalcourses: 5,
-  //   totalEarnings: 1240.5,
-  //   courses: [
-  //     { id: 'c1', title: 'React for Beginners', students: 120, price: 39.99 },
-  //     { id: 'c2', title: 'Advanced Node.js', students: 85, price: 49.99 },
-  //     { id: 'c3', title: 'Data Science 101', students: 60, price: 59.99 },
-  //     { id: 'c4', title: 'Intro to Python', students: 200, price: 29.99 },
-  //     { id: 'c5', title: 'UX Fundamentals', students: 40, price: 19.99 },
-  //   ],
-  // };
   const fetchDashboardData = async () => {
      try {
           const token = await getToken();
@@ -38,7 +18,6 @@ const Dashboard = () => {
             {headers : {Authorization : `Bearer ${token}`}});
           if (data.success) {
             setDashboardData(data.DashboardData);
-            console.log(data.DashboardData);
           } else {
             toast.error(data.message);
           }
@@ -49,38 +28,38 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [backendURL, getToken]);
   return dashboardData ? (
     <div className="min-h-screen flex flex-col items-start justify-between gap-8 md:p-8 md:pb-0 p-4 pt-8 pb-0">
      
-      <div className="space-y-5">
-         <h2 className='font-bold'>Dashboard</h2>
-        <div className="flex flex-wrap gap-5 items-center">
-          <div className="flex items-center gap-3 shadow-card border border-blue-500 p-4 w-56 rounded-md">
-            <img src={assets.patients_icon} alt="patients_icon" className='w-10'/>
+      <div className="space-y-5 w-full">
+         <h2 className='font-bold text-xl md:text-2xl'>Dashboard</h2>
+        <div className="flex flex-wrap gap-4 md:gap-5 items-center">
+          <div className="flex items-center gap-3 shadow-card border border-blue-500 p-4 w-full sm:w-56 rounded-md">
+            <FaUserGraduate className="text-2xl md:text-3xl text-blue-600" />
             <div>
-              <p className="text-2xl font-medium text-gray-600">
+              <p className="text-xl md:text-2xl font-medium text-gray-600">
                 {dashboardData.enrolledStudents.length || 0}
               </p>
-              <p className="text-base text-gray-500">Total Enrolments</p>
+              <p className="text-sm md:text-base text-gray-500">Total Enrolments</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 shadow-card border border-blue-500 p-4 w-56 rounded-md">
-            <img src={assets.appointment_icon} alt="patients_icon" className='w-10' />
+          <div className="flex items-center gap-3 shadow-card border border-blue-500 p-4 w-full sm:w-56 rounded-md">
+            <FaBook className="text-2xl md:text-3xl text-blue-600" />
             <div>
-              <p className="text-2xl font-medium text-gray-600">
+              <p className="text-xl md:text-2xl font-medium text-gray-600">
                 {dashboardData.totalCourses || 0}
               </p>
-              <p className="text-base text-gray-500">Total Courses</p>
+              <p className="text-sm md:text-base text-gray-500">Total Courses</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 shadow-card border border-blue-500 p-4 w-56 rounded-md">
-            <img src={assets.earning_icon} alt="patients_icon" className='w-10'/>
+          <div className="flex items-center gap-3 shadow-card border border-blue-500 p-4 w-full sm:w-56 rounded-md">
+            <FaDollarSign className="text-2xl md:text-3xl text-blue-600" />
             <div>
-              <p className="text-2xl font-medium text-gray-600">
+              <p className="text-xl md:text-2xl font-medium text-gray-600">
                 {dashboardData.totalEarnings || 0}
               </p>
-              <p className="text-base text-gray-500">Total Earnings</p>
+              <p className="text-sm md:text-base text-gray-500">Total Earnings</p>
             </div>
           </div>
         </div>
@@ -91,37 +70,36 @@ const Dashboard = () => {
             <table className="table-fixed md:table-auto w-full overflow-hidden">
               <thead className="text-gray-900 border-b border-gray-500/20 text-left">
                 <tr>
-                  <th className="px-4 py-3 font-semibold text-center hidden sm:table-cell">
+                  <th className="px-2 md:px-4 py-3 font-semibold text-center hidden sm:table-cell text-sm md:text-base">
                     #
                   </th>
-                  <th className="px-4 py-3 font-semibold">Student Name</th>
-                  <th className="px-4 py-3 font-semibold">Course Title</th>
+                  <th className="px-2 md:px-4 py-3 font-semibold text-sm md:text-base">Student Name</th>
+                  <th className="px-2 md:px-4 py-3 font-semibold text-sm md:text-base">Course Title</th>
                 </tr>
               </thead>
 
-              <tbody className="text-sm text-gray-500">
+              <tbody className="text-xs md:text-sm text-gray-500">
                 {dashboardData.enrolledStudents.map((item, index) => (
                   <tr
                     key={index}
                     className="border-b border-gray-500/20"
                   >
-                    <td className="px-4 py-3 text-center hidden sm:table-cell">
+                    <td className="px-2 md:px-4 py-3 text-center hidden sm:table-cell">
                       {index + 1}
                     </td>
 
-                    <td className="md:px-4 px-2 py-3 flex items-center space-x-3">
+                    <td className="px-2 md:px-4 py-3 flex items-center space-x-2 md:space-x-3">
                       <img
-                       
                          src={item.student.imgUrl}
                         alt="Profile"
-                        className="w-9 h-9 rounded-full"
+                        className="w-8 h-8 md:w-9 md:h-9 rounded-full object-cover"
                       />
-                      <span className="truncate">
+                      <span className="truncate max-w-[150px] md:max-w-none">
                         {item.student.name}
                       </span>
                     </td>
 
-                    <td className="px-4 py-3 truncate">
+                    <td className="px-2 md:px-4 py-3 truncate max-w-[200px] md:max-w-none">
                       {item.courseTitle}
                     </td>
                   </tr>

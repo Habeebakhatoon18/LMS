@@ -3,10 +3,11 @@ import courseModel from "../models/course.js";
 import { clerkClient } from "@clerk/express";
 import purchaseModel from "../models/purchase.js";
 import UserModel from "../models/user.js";
+import mongoose from "mongoose";
 
 const updatedToEducator = async (req, res) => {
   try {
-    const { userId } = req.auth(); 
+    const { userId } = req.auth();
 
     await clerkClient.users.updateUserMetadata(userId, {
       publicMetadata: { role: "educator" },
@@ -24,7 +25,7 @@ export const addCourse = async (req, res) => {
     const { courseData } = req.body;
     const img = req.file;
     const educatorId = req.auth().userId;
-    const educatorUser = await UserModel.findOne({ id:educatorId });
+    const educatorUser = await UserModel.findOne({ id: educatorId });
     if (!img) {
       return res.status(400).json({ error: "Image file is required" });
     }
@@ -35,7 +36,7 @@ export const addCourse = async (req, res) => {
     parsedCourseData.courseThumbnail = imgPath.secure_url;
     const newCourse = await courseModel.create(parsedCourseData);
 
-    return res.json({success:true, message: "Course added successfully" });
+    return res.json({ success: true, message: "Course added successfully" });
 
   } catch (error) {
     console.error(error);
@@ -46,9 +47,9 @@ export const addCourse = async (req, res) => {
 export const getEducatorCourses = async (req, res) => {
   try {
     const educatorId = req.auth().userId;
-    const educatorUser = await UserModel.findOne({ id:educatorId });
+    const educatorUser = await UserModel.findOne({ id: educatorId });
     const courses = await courseModel.find({ educator: educatorUser._id });
-    return res.json({success :true, courses});
+    return res.json({ success: true, courses });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Failed to fetch courses" });
@@ -58,24 +59,25 @@ export const getEducatorCourses = async (req, res) => {
 const getDashboardData = async (req, res) => {
   try {
     const educatorId = req.auth().userId;
-   // const courses = await courseModel.find({ educator: educatorId });
-   const educatorUser = await UserModel.findOne({ id:educatorId });
+    // const courses = await courseModel.find({ educator: educatorId });
+    const educatorUser = await UserModel.findOne({ id: educatorId });
     const courses = await courseModel.find({ educator: educatorUser._id });
-    
+
     const totalCourses = courses.length;
 
     const purchases = await purchaseModel.find({ courseId: { $in: courses.map(course => course._id) }, status: "completed" });
     const totalEarnings = purchases.reduce((sum, purchase) => sum + purchase.amount, 0);
 
     const enrolledStudentData = [];
-    
     for (const course of courses) {
-      const students = await UserModel.find({
-        id: { $in: course.enrolledStudents },
+      const students = await UserModel.find(
+        {
+          _id: { $in: course.enrolledStudents.map(id => new mongoose.Types.ObjectId(id)) }
+        },
+        'name imgUrl'
+      );
 
-      }, 'name imgUrl');
-      
-      students.forEach((student) => {
+      students.forEach(student => {
         enrolledStudentData.push({
           courseTitle: course.courseTitle,
           student

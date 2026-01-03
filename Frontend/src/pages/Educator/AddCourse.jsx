@@ -33,6 +33,10 @@ const AddCourse = () => {
     }
   }, []);
 
+  useEffect(() => {
+    setChapters([]);
+  }, []);
+
   const handleChapter = (action, chapterId) => {
     if (action === "add") {
       const title = prompt("Enter Chapter Name:");
@@ -146,21 +150,11 @@ const AddCourse = () => {
     }
   };
 
-  useEffect(() => {
-    if(!quillRef.current && editorRef) 
-    quillRef.current = new Quill(editorRef.current, {
-      theme: 'snow',
-    });
-  }, [editorRef]);
-
-  useEffect(() => {
-  setChapters([]);
-}, []);
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <h2 className="text-xl font-semibold mb-4">Add Course</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="p-4 md:p-6 max-w-3xl mx-auto">
+      <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">Add Course</h2>
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         <div>
           <label className="block text-sm font-medium mb-1">Course Title</label>
           <input value={courseTitle} onChange={(e) => setCourseTitle(e.target.value)} placeholder="Type here" className="w-full border p-2 rounded-md" />
@@ -171,7 +165,7 @@ const AddCourse = () => {
           <div ref={editorRef} className="bg-white border rounded-md" style={{ minHeight: 120 }}></div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Course Price</label>
             <input type="number" value={coursePrice} onChange={(e) => setCoursePrice(Number(e.target.value))} className="w-full border p-2 rounded-md" />
@@ -180,14 +174,14 @@ const AddCourse = () => {
           <div>
             <label className="block text-sm font-medium mb-1">Course Thumbnail</label>
             <div className="flex items-center gap-2">
-              <label htmlFor="thumb" className="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded cursor-pointer">Upload</label>
+              <label htmlFor="thumb" className="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded cursor-pointer text-sm">Upload</label>
               <input id="thumb" type="file" accept="image/*" onChange={handleThumbnail} className="hidden" />
               {preview && <img src={preview} alt="thumb" className="w-20 h-12 object-cover rounded" />}
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1">Discount %</label>
             <input type="number" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} className="w-full border p-2 rounded-md" />

@@ -119,6 +119,27 @@ const Player = () => {
     }
   };
 
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+
+    // youtu.be/<id>
+    if (url.includes("youtu.be")) {
+      return url.split("youtu.be/")[1]?.split("?")[0];
+    }
+
+    // youtube.com/watch?v=<id>
+    if (url.includes("watch?v=")) {
+      return url.split("watch?v=")[1]?.split("&")[0];
+    }
+
+    // youtube.com/embed/<id>
+    if (url.includes("embed/")) {
+      return url.split("embed/")[1]?.split("?")[0];
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     const fetchRating = async () => {
       try {
@@ -130,22 +151,27 @@ const Player = () => {
         );
 
         if (data.success) {
-          setInitialRating(data.course.courseRating[0].rating); // Set the existing rating
+          if (data.course.courseRating?.length > 0) {
+            setInitialRating(data.course.courseRating[0].rating);
+          }
+          // Set the existing rating
         }
       } catch (err) {
         console.error("Error fetching rating:", err);
       }
     };
-    fetchRating();
-  }, [courseId, backendURL]);
+    if (courseId && user) {
+      fetchRating();
+    }
+  }, [courseId, backendURL, getToken, user]);
 
 
   if (!course) return <div className="p-6">Loading course...</div>;
   return (
-    <div className="flex gap-8 p-6 bg-gray-50 min-h-screen">
+    <div className="flex flex-col lg:flex-row gap-4 md:gap-8 p-4 md:p-6 bg-gray-50 min-h-screen">
 
       {/*LEFT SIDEBAR  */}
-      <aside className=" bg-white rounded-xl shadow-sm border flex flex-col">
+      <aside className="bg-white rounded-xl shadow-sm border flex flex-col w-full lg:w-80 h-auto lg:h-[calc(100vh-3rem)] order-2 lg:order-1">
 
         <div className="px-4 py-3 border-b sticky top-0 bg-white z-10">
           <h3 className="text-base font-semibold text-gray-800">
@@ -240,39 +266,51 @@ const Player = () => {
       </aside>
 
       {/* MAIN PLAYER*/}
-      <main className="flex-1 space-y-4">
+      <main className="flex-1 space-y-4 order-1 lg:order-2">
 
         {/* VIDEO */}
-        <div className="bg-black rounded-xl overflow-hidden shadow-md">
+        <div className="bg-black rounded-xl overflow-hidden shadow-md w-full">
           {currentLecture ? (
-            <YouTube
-              videoId={currentLecture.lectureUrl.split("/").pop()}
-              className="w-full aspect-video"
-            />
+            <div className="relative w-full aspect-video bg-black">
+              <YouTube
+                videoId={getYouTubeVideoId(currentLecture.lectureUrl)}
+                className="absolute inset-0 w-full h-full"
+                iframeClassName="w-full h-full"
+                opts={{
+                  playerVars: {
+                    autoplay: 1,
+                  },
+                }}
+              />
+            </div>
           ) : (
-            <div className="aspect-video flex items-center justify-center text-gray-400">
-              <img src={course.courseThumbnail} alt="" />
+            <div className="aspect-video flex items-center justify-center">
+              <img
+                src={course.courseThumbnail}
+                alt=""
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
         </div>
 
         {/* INFO + COMPLETE */}
         {currentLecture && (
-          <div className="bg-white rounded-xl shadow-sm border p-5 flex justify-between items-center">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800">
+          <div className="bg-white rounded-xl shadow-sm border p-4 md:p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div className="flex-1">
+              <h2 className="text-base md:text-lg font-semibold text-gray-800">
                 {currentLecture.lectureTitle}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className="text-xs md:text-sm text-gray-500">
                 {currentLecture.chapter.chapterTitle}
               </p>
             </div>
             {(() => {
-              const isCompleted = progressData?.lecturesCompleted?.includes(currentLecture.lectureId);
+              const isCompleted = progressData?.lectureCompleted?.includes(currentLecture.lectureId);
               return (
                 <button
                   onClick={() => markComplete(currentLecture.lectureId)}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition
+                  className={`px-3 md:px-4 py-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap
             ${isCompleted
                       ? "bg-green-100 text-green-700 cursor-default"
                       : "bg-blue-600 text-white hover:bg-blue-700"

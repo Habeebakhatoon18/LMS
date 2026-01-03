@@ -6,15 +6,15 @@ import Edusidebar from '../../components/Educator/Edusidebar';
 
 const Educator = () => {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Edunavbar />
-      <div className='flex '>
+      <div className='flex flex-col lg:flex-row flex-1'>
         <Edusidebar />
-        <div className='flex-1'>
+        <div className='flex-1 overflow-x-hidden'>
           <Outlet />
         </div>
       </div>
-<Footer />
+      <Footer />
     </div>
 
   )
