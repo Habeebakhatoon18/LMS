@@ -1,18 +1,21 @@
-import React, { use, useEffect } from 'react'
 import uniqid from 'uniqid';
 import Quill from 'quill';
-import { useRef, useState } from 'react';
+import { useRef, useState, useContext, useEffect } from 'react';
+import { AppContext } from '../../context/AppContext';
+import axios from 'axios';
+import {toast} from 'react-toastify';
 
 const AddCourse = () => {
   const quillRef = useRef(null);
   const editorRef = useRef(null);
-
+  const {backendURL, getToken} = useContext(AppContext);
   const [courseTitle, setCourseTitle] = useState("");
   const [coursePrice, setCoursePrice] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [image, setImage] = useState(null);
   const [chapters, setChapters] = useState([]);
   const [showLectureFormFor, setShowLectureFormFor] = useState(null);
+  const [preview, setPreview] = useState(null);
 
   const [lectureDetails, setLectureDetails] = useState({
     lectureTitle: "",
@@ -62,49 +65,84 @@ const AddCourse = () => {
     }
   };
 
-  const handleThumbnail = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setImage(url);
-    }
-  };
+  
+ const handleThumbnail = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
 
-  const handleAddLecture = (chapterId) => {
-    const { lectureTitle, lectureDuration, lectureUrl, isPreviewFree } = lectureDetails;
-    if (!lectureTitle) return alert('Please enter lecture title');
-    const newLecture = {
-      id: uniqid(),
-      lectureTitle,
-      lectureDuration,
-      lectureUrl,
-      isPreviewFree,
-    };
-    setChapters(
-      chapters.map((ch) =>
-        ch.chapterId === chapterId
-          ? { ...ch, chapterContent: [...ch.chapterContent, newLecture] }
-          : ch
-      )
-    );
-    // reset lecture form
-    setLectureDetails({ lectureTitle: "", lectureDuration: "", lectureUrl: "", isPreviewFree: false });
-    setShowLectureFormFor(null);
-  };
+  setImage(file); // File object (for backend upload)
+  setPreview(URL.createObjectURL(file)); // Preview URL (for UI)
+};
 
-  const handleSubmit = (e) => {
+
+ const handleAddLecture = (chapterId) => {
+  const { lectureTitle, lectureDuration, lectureUrl, isPreviewFree } = lectureDetails;
+
+  if (!lectureTitle) return alert('Please enter lecture title');
+
+  setChapters(
+    chapters.map((ch) =>
+      ch.chapterId === chapterId
+        ? {
+            ...ch,
+            chapterContent: [
+              ...ch.chapterContent,
+              {
+                lectureId: uniqid(),
+                lectureTitle,
+                lectureDuration,
+                lectureUrl,
+                isPreviewFree,
+                lectureOrder: ch.chapterContent.length + 1,
+              },
+            ],
+          }
+        : ch
+    )
+  );
+
+  setLectureDetails({
+    lectureTitle: "",
+    lectureDuration: "",
+    lectureUrl: "",
+    isPreviewFree: false,
+  });
+
+  setShowLectureFormFor(null);
+};
+
+
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    const description = quillRef.current?.root?.innerHTML || '';
+    if(!image) toast.error('Thubmnail not provided');
+    const courseDescription = quillRef.current?.root?.innerHTML || '';
     const payload = {
       courseTitle,
-      description,
-      coursePrice,
-      discount,
-      image,
-      chapters,
+      courseDescription,
+      coursePrice: Number(coursePrice),
+      discount: Number(discount),
+      courseContent :chapters,
     };
-    console.log('Course payload (dev):', payload);
-    alert('Course saved to console (dev)');
+    const formData = new FormData();
+    formData.append('courseData',JSON.stringify(payload));
+    formData.append('image', image);
+    const token = await getToken();
+    const {data} = await axios.post(`${backendURL}/educator/add-course`,
+      formData,
+       {headers : {Authorization : `Bearer ${token}`}});
+
+    if(data.success){
+      toast.success(data.message);
+      setCourseTitle("");
+      setCoursePrice(0);
+      setChapters([]);
+      setDiscount(0);
+      setImage(null);
+      setPreview(null);
+      quillRef.current.root.innerHTML = ''
+    }else{
+      toast.error(data.message);
+    }
   };
 
   useEffect(() => {
@@ -113,6 +151,11 @@ const AddCourse = () => {
       theme: 'snow',
     });
   }, [editorRef]);
+
+  useEffect(() => {
+  setChapters([]);
+}, []);
+
   return (
     <div className="p-4 max-w-3xl mx-auto">
       <h2 className="text-xl font-semibold mb-4">Add Course</h2>
@@ -138,7 +181,7 @@ const AddCourse = () => {
             <div className="flex items-center gap-2">
               <label htmlFor="thumb" className="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded cursor-pointer">Upload</label>
               <input id="thumb" type="file" accept="image/*" onChange={handleThumbnail} className="hidden" />
-              {image && <img src={image} alt="thumb" className="w-20 h-12 object-cover rounded" />}
+              {preview && <img src={preview} alt="thumb" className="w-20 h-12 object-cover rounded" />}
             </div>
           </div>
         </div>
@@ -164,7 +207,7 @@ const AddCourse = () => {
                     <div>
                       <div className="space-y-2">
                         {ch.chapterContent.map((lec) => (
-                          <div key={lec.id} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                          <div key={lec.lectureId} className="flex items-center justify-between bg-gray-50 p-2 rounded">
                             <div>
                               <div className="text-sm font-medium">{lec.lectureTitle}</div>
                               <div className="text-xs text-gray-500">{lec.lectureDuration}</div>
@@ -176,7 +219,19 @@ const AddCourse = () => {
                         <div className="mt-2 p-2 border rounded bg-gray-50">
                           <input value={lectureDetails.lectureTitle} onChange={(e) => setLectureDetails({ ...lectureDetails, lectureTitle: e.target.value })} placeholder="Lecture title" className="w-full border p-2 rounded mb-2" />
                           <div className="grid grid-cols-2 gap-2">
-                            <input value={lectureDetails.lectureDuration} onChange={(e) => setLectureDetails({ ...lectureDetails, lectureDuration: e.target.value })} placeholder="Duration" className="w-full border p-2 rounded" />
+                         <input
+  type="number"
+  value={lectureDetails.lectureDuration}
+  onChange={(e) =>
+    setLectureDetails({
+      ...lectureDetails,
+      lectureDuration: Number(e.target.value),
+    })
+  }
+  placeholder="Duration (minutes)"
+  className="w-full border p-2 rounded"
+/>
+
                             <input value={lectureDetails.lectureUrl} onChange={(e) => setLectureDetails({ ...lectureDetails, lectureUrl: e.target.value })} placeholder="Video URL" className="w-full border p-2 rounded" />
                           </div>
                           <div className="flex items-center gap-2 mt-2">

@@ -5,10 +5,10 @@ import SearchBar from './SearchBar';
 
 const Hero = () => {
   const navigate = useNavigate();
-
+  
   return (
-    <section className="relative pt-28 min-h-screen  from-emerald-300 via-lime-300 to-emerald-500 overflow-hidden">
-
+    <section className="relative pt-28 min-h-screen bg-gradient-to-br from-emerald-300 via-lime-300 to-emerald-500 overflow-hidden">
+      
       {/* Background Decorations */}
       <div className="absolute inset-0">
         <div className="absolute top-20 right-10 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
@@ -25,7 +25,7 @@ const Hero = () => {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
-
+          
           {/* Trust Badge */}
           <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-8">
             <CheckCircle className="h-5 w-5 text-black" />
@@ -56,6 +56,8 @@ const Hero = () => {
               View All Courses
             </button>
 
+            {/* limit search width so it doesn't stretch too far */}
+            
           </div>
 
         </div>
