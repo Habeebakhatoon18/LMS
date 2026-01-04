@@ -115,7 +115,7 @@ const MyEnrolment = () => {
                         <img
                           src={course.courseThumbnail}
                           alt={course.courseTitle}
-                          className="w-12 h-8 md:w-20 md:h-12 object-cover rounded-md flex-shrink-0"
+                          className="w-12 h-8 md:w-20 md:h-12 object-cover rounded-md shrink-0"
                         />
                         <div className="flex flex-col min-w-0">
                           <span className="font-medium text-gray-800 text-xs md:text-sm truncate">
@@ -138,7 +138,7 @@ const MyEnrolment = () => {
                       </td>
 
                       {/* Progress */}
-                      <td className="px-3 md:px-6 py-3 md:py-4 min-w-[120px] md:w-48">
+                      <td className="px-3 md:px-6 py-3 md:py-4 min-w-30 md:w-48">
                         <div className="w-full bg-gray-200 h-2 rounded-full">
                           <div
                             className="h-2 bg-blue-600 rounded-full transition-all duration-500"

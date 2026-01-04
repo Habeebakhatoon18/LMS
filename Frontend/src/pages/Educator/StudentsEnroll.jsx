@@ -60,7 +60,7 @@ const StudentsEnroll = () => {
                     <img
                       src={std.studentThumbnail || "https://via.placeholder.com/64"}
                       alt="Student"
-                      className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover flex-shrink-0"
+                      className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover shrink-0"
                     />
                     <span className="truncate block min-w-0">
                       {std.studentName}
@@ -84,7 +84,7 @@ const StudentsEnroll = () => {
       </div>
     </div>
   ) : (
-    <div className='w-full p-4 md:p-6 min-h-[400px] flex items-center justify-center'>
+    <div className='w-full p-4 md:p-6 min-h-100 flex items-center justify-center'>
       <h2 className='text-center text-gray-500 text-lg md:text-xl'>No students enrolled yet</h2>
     </div>
   );

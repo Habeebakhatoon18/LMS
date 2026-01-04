@@ -15,7 +15,6 @@ dotenv.config();
 connectDB();
 await connectCloudinary();
 
-// Allow the frontend to send Clerk session cookies. Set `CLIENT_URL` in your .env
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
 app.use(clerkMiddleware());
 
@@ -24,8 +23,6 @@ app.post(
   express.raw({ type: "application/json" }),
   clerkWebhook
 );
-
-
 
 app.use('/educator', express.json(), EducatorRouter)
 app.use('/courses',express.json(),  CourseRouter);

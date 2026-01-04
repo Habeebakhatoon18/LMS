@@ -8,12 +8,12 @@ import Footer from '../../components/Student/Footer.jsx'
 const Home = () => {
   return (
     <div>
-      <Navbar/>
-<Hero />
-<CoursesSection />
-<FAQSection />
-<CallToAction />
-<Footer />
+      <Navbar />
+      <Hero />
+      <CoursesSection />
+      <FAQSection />
+      <CallToAction />
+      <Footer />
     </div>
   )
 }
