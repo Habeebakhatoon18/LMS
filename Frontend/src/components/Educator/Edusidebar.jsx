@@ -6,8 +6,6 @@ import { FaPlusCircle } from 'react-icons/fa';
 import { FaBookOpen } from 'react-icons/fa';
 import { FaUsers } from 'react-icons/fa';
 
-
-
 const Edusidebar = () => {
   const { isEducator } = useContext(AppContext);
   
@@ -32,7 +30,7 @@ const Edusidebar = () => {
                 : 'flex items-center gap-2 hover:bg-gray-100 py-3 px-4 md:px-6 rounded-lg text-gray-600 whitespace-nowrap'
             }
           >
-            <item.icon className="w-5 h-5 md:w-6 md:h-6 flex-shrink-0" />
+            <item.icon className="w-5 h-5 md:w-6 md:h-6 shrink-0" />
             <p className='text-sm md:text-base'>{item.name}</p>
           </NavLink>
         )

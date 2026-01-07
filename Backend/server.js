@@ -1,7 +1,6 @@
-import express, { application } from 'express';
+import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import connectDB from './config/mongodb.js';
 import { clerkMiddleware } from '@clerk/express';
 import EducatorRouter from './routes/educator.js';

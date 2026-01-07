@@ -9,7 +9,7 @@ const Loading = () => {
     if (path) {
       const timer = setTimeout(() => {
         navigate(`/${path}`)
-      }, 5000)
+      }, 3000)
     return () => clearTimeout(timer);
     }
   }, [])

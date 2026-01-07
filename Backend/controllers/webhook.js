@@ -1,4 +1,3 @@
-import stripe from 'stripe';
 import { Webhook } from "svix";
 import UserModel from "../models/user.js";
 import PurchaseModel from '../models/purchase.js';
@@ -16,9 +15,9 @@ export const clerkWebhook = async (req, res) => {
     };
 
     const event = whook.verify(req.body, headers);
-    console.log('Clerk webhook event:', event.type);
+   // console.log('Clerk webhook event:', event.type);
     // log event data lightly for debugging (avoid PII in production)
-    console.log('Clerk webhook data keys:', Object.keys(event.data || {}));
+    //console.log('Clerk webhook data keys:', Object.keys(event.data || {}));
     const { type, data } = event;
 
     switch (type) {

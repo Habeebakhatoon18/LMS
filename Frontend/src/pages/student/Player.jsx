@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import YouTube from "react-youtube";
@@ -8,6 +7,21 @@ import { AppContext } from "../../context/AppContext";
 
 const StarRating = ({ value, onRate }) => {
   const [hover, setHover] = useState(0);
+  const positions = [
+  "top-4 left-4",
+  "top-4 right-4",
+  "bottom-4 left-4",
+  "bottom-4 right-4",
+];
+
+const [pos, setPos] = useState(0);
+
+useEffect(() => {
+  const i = setInterval(() => {
+    setPos((p) => (p + 1) % positions.length);
+  }, 45000);
+  return () => clearInterval(i);
+}, []);
 
   return (
     <div className="flex gap-1">
@@ -271,18 +285,32 @@ const Player = () => {
         {/* VIDEO */}
         <div className="bg-black rounded-xl overflow-hidden shadow-md w-full">
           {currentLecture ? (
-            <div className="relative w-full aspect-video bg-black">
+            <div onContextMenu={(e) => e.preventDefault()} className="relative w-full aspect-video">
+              {/* YouTube Player */}
               <YouTube
-                videoId={getYouTubeVideoId(currentLecture.lectureUrl)}
+                videoId={currentLecture.youtubeVideoId}
                 className="absolute inset-0 w-full h-full"
                 iframeClassName="w-full h-full"
                 opts={{
                   playerVars: {
                     autoplay: 1,
+                    controls: 1,
+                    rel: 0,
+                    modestbranding: 1,
+                    disablekb: 1,
+                    fs: 1,
                   },
                 }}
               />
+
+              {/* Watermark Overlay */}
+              <div className="absolute inset-0 pointer-events-none z-10">
+                <span className={`absolute ${positions[pos]}  opacity-40 text-sm bg-black/30 px-2 py-1 rounded`}>
+                  {user.email}
+                </span>
+              </div>
             </div>
+
           ) : (
             <div className="aspect-video flex items-center justify-center">
               <img

@@ -33,9 +33,9 @@ const AddCourse = () => {
     }
   }, []);
 
-  useEffect(() => {
-    setChapters([]);
-  }, []);
+  // useEffect(() => {
+  //   setChapters([]);
+  // }, []);
 
   const handleChapter = (action, chapterId) => {
     if (action === "add") {
@@ -68,8 +68,7 @@ const AddCourse = () => {
       );
     }
   };
-
-  
+ 
  const handleThumbnail = (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -77,7 +76,6 @@ const AddCourse = () => {
   setImage(file); // File object (for backend upload)
   setPreview(URL.createObjectURL(file)); // Preview URL (for UI)
 };
-
 
  const handleAddLecture = (chapterId) => {
   const { lectureTitle, lectureDuration, lectureUrl, isPreviewFree } = lectureDetails;
@@ -150,7 +148,6 @@ const AddCourse = () => {
     }
   };
 
-
   return (
     <div className="p-4 md:p-6 max-w-3xl mx-auto">
       <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6">Add Course</h2>
@@ -215,17 +212,17 @@ const AddCourse = () => {
                           <input value={lectureDetails.lectureTitle} onChange={(e) => setLectureDetails({ ...lectureDetails, lectureTitle: e.target.value })} placeholder="Lecture title" className="w-full border p-2 rounded mb-2" />
                           <div className="grid grid-cols-2 gap-2">
                          <input
-  type="number"
-  value={lectureDetails.lectureDuration}
-  onChange={(e) =>
-    setLectureDetails({
-      ...lectureDetails,
-      lectureDuration: Number(e.target.value),
-    })
-  }
-  placeholder="Duration (minutes)"
-  className="w-full border p-2 rounded"
-/>
+                          type="number"
+                          value={lectureDetails.lectureDuration}
+                          onChange={(e) =>
+                            setLectureDetails({
+                              ...lectureDetails,
+                              lectureDuration: Number(e.target.value),
+                            })
+                         }
+                            placeholder="Duration (minutes)"
+                            className="w-full border p-2 rounded"
+                          />
 
                             <input value={lectureDetails.lectureUrl} onChange={(e) => setLectureDetails({ ...lectureDetails, lectureUrl: e.target.value })} placeholder="Video URL" className="w-full border p-2 rounded" />
                           </div>

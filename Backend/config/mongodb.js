@@ -5,16 +5,12 @@ const connectDB = async () => {
 
     if (!process.env.MONGODB_URI) {
         console.warn("Warning: MONGODB_URI not set; using default local URI");
-    } else {
+    } 
         // Mask credentials when logging the URI for debugging
-        let safeUri = mongoUri;
-        try {
-            safeUri = mongoUri.includes('@') ? mongoUri.replace(/\/\/.*@/, "//***:***@") : mongoUri;
-        } catch (e) {
-            // ignore masking errors
-        }
+        //let safeUri = mongoUri;
+        //  safeUri = mongoUri.includes('@') ? mongoUri.replace(/\/\/.*@/, "//***:***@") : mongoUri;
         // console.log("Connecting to MongoDB:", safeUri);
-    }
+    
 
     try {
         await mongoose.connect(mongoUri);
