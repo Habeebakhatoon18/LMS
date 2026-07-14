@@ -42,6 +42,23 @@ This project focuses on **clean architecture**, **role-based access control**, *
 - **Backend**: Vercel
 - **Database**: MongoDB Atlas
 
+## 🌱 Prisma Migration
+
+A complete migration from **MongoDB (Mongoose)** to **PostgreSQL (Prisma ORM)** has been implemented in the **`prisma`** branch.
+
+### Highlights
+
+- Prisma ORM
+- PostgreSQL
+- Relational database schema
+- Nested relations
+- Foreign key constraints
+- Database migrations
+- Seeding support
+
+> **Note:** The deployed application currently uses the **MongoDB** implementation available on the `main` branch. The Prisma migration is available in the `prisma` branch.
+
+
 ## 👥 User Roles & Features
 
 ### 👨‍🎓 Student
@@ -96,6 +113,8 @@ This project demonstrates hands-on experience with:
 - Authentication & authorization using Clerk
 - Payment integration with Stripe
 - Media handling using third-party services
+- Database design
+- ORM usage with Prisma
 - Admin dashboards & analytics
 - Real-world deployment workflows
 - Error handling and edge-case management
