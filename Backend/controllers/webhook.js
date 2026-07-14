@@ -1,8 +1,10 @@
 import { Webhook } from "svix";
-import UserModel from "../models/user.js";
-import PurchaseModel from '../models/purchase.js';
-import CourseModel from '../models/course.js'
+// import UserModel from "../models/user.js";
+// import PurchaseModel from '../models/purchase.js';
+// import CourseModel from '../models/course.js'
+import prisma from "../config/prisma.js";
 import stripeInstance from "../config/stripe.js";
+
 
 export const clerkWebhook = async (req, res) => {
   try {
@@ -22,28 +24,47 @@ export const clerkWebhook = async (req, res) => {
 
     switch (type) {
       case "user.created":
-        await UserModel.create({
-          id: data.id,
-          name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
-          email: data.email_addresses[0]?.email_address,
-          imgUrl: data.image_url || "",
+        // await UserModel.create({
+        //   id: data.id,
+        //   name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+        //   email: data.email_addresses[0]?.email_address,
+        //   imgUrl: data.image_url || "",
+        // });
+        await prisma.user.create({
+          data: {
+            id: data.id,
+            name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+            email: data.email_addresses[0]?.email_address,
+            imgUrl: data.image_url || "",
+          }
         });
        
         break;
 
       case "user.updated":
-        await UserModel.findOneAndUpdate(
-          { id: data.id },
-          {
+        // await UserModel.findOneAndUpdate(
+        //   { id: data.id },
+        //   {
+        //     name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
+        //     email: data.email_addresses[0]?.email_address,
+        //     imgUrl: data.image_url || "",
+        //   }
+        // );
+        await prisma.user.update({
+          where: { id: data.id },
+          data: {
             name: `${data.first_name || ""} ${data.last_name || ""}`.trim(),
             email: data.email_addresses[0]?.email_address,
             imgUrl: data.image_url || "",
           }
-        );
+        });
         break;
 
       case "user.deleted":
-        await UserModel.findOneAndDelete({ id: data.id });
+        // await UserModel.findOneAndDelete({ id: data.id });
+        await prisma.user.delete({
+          where: { id: data.id }
+        });
         break;
 
       default:
@@ -78,18 +99,50 @@ export const stripeWebhook = async (req, res) => {
 
       const { purchaseId } = session.data[0].metadata;
 
-      const purchaseData = await PurchaseModel.findById(purchaseId);
-      const userData = await UserModel.findOne({id:purchaseData.userId});
-      const courseData = await CourseModel.findById(purchaseData.courseId.toString())
+      // const purchaseData = await PurchaseModel.findById(purchaseId);
+      // const userData = await UserModel.findOne({id:purchaseData.userId});
+      // const courseData = await CourseModel.findById(purchaseData.courseId.toString())
+      //
+      // courseData.enrolledStudents.push(userData._id)
+      // // courseData.enrolledStudents.push(userData.id)
+      // await courseData.save()
+      //
+      // userData.enrolledCourses.push(courseData._id)
+      // await userData.save()
+      // purchaseData.status = 'completed'
+      // await purchaseData.save()
 
-      courseData.enrolledStudents.push(userData._id)
-      // courseData.enrolledStudents.push(userData.id)
-      await courseData.save()
+      await prisma.$transaction(async (tx) => {
+        const purchaseData = await tx.purchase.findUnique({
+          where: { id: purchaseId }
+        });
+        if (!purchaseData) {
+          throw new Error("Purchase not found");
+        }
 
-      userData.enrolledCourses.push(courseData._id)
-      await userData.save()
-      purchaseData.status = 'completed'
-      await purchaseData.save()
+        const userData = await tx.user.findUnique({
+          where: { id: purchaseData.userId }
+        });
+        if (!userData) {
+          throw new Error("User not found");
+        }
+
+        // Connect user to course to enroll them (updates both ends of implicit relation)
+        await tx.user.update({
+          where: { id: userData.id },
+          data: {
+            enrolledCourses: {
+              connect: { id: purchaseData.courseId }
+            }
+          }
+        });
+
+        // Set status to completed
+        await tx.purchase.update({
+          where: { id: purchaseId },
+          data: { status: "completed" }
+        });
+      });
       break;
     }
     case 'payment_intent.payment_failed': {
@@ -101,9 +154,13 @@ export const stripeWebhook = async (req, res) => {
       })
 
       const { purchaseId } = session.data[0].metadata;
-      const purchaseData = await PurchaseModel.findById(purchaseId);
-      purchaseData.status = 'failed'
-      purchaseData.save()
+      // const purchaseData = await PurchaseModel.findById(purchaseId);
+      // purchaseData.status = 'failed'
+      // purchaseData.save()
+      await prisma.purchase.update({
+        where: { id: purchaseId },
+        data: { status: "failed" }
+      });
       break;
     }
     default:

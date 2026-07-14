@@ -38,7 +38,7 @@ const Navbar = () => {
 
   useEffect(() => {
     if (user) fetchUserData();
-  }, [user, isEducator, fetchUserData]);
+  }, [user, isEducator]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white backdrop-blur-md border-b border-emerald-200 shadow-sm">

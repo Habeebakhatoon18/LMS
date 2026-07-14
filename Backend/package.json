@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
-  "type" :"module",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,14 +12,18 @@
   "description": "",
   "dependencies": {
     "@clerk/express": "^1.7.60",
+    "@prisma/client": "^6.16.2",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mongoose": "^9.0.2",
     "multer": "^2.0.2",
     "nodemon": "^3.1.11",
     "stripe": "^20.1.0",
     "svix": "^1.42.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.16.2"
   }
 }

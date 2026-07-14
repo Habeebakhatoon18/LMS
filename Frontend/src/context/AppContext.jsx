@@ -85,6 +85,7 @@ export const AppContextProvider = (props) => {
     }
 
     const fetchUserData = async () => {
+      //  console.trace("fetchUserData called");
         if (user.publicMetadata.role === 'educator')
             setIsEducator(true);
 

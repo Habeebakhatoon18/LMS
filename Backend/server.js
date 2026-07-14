@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import connectDB from './config/mongodb.js';
+// import connectDB from './config/mongodb.js';
 import { clerkMiddleware } from '@clerk/express';
 import EducatorRouter from './routes/educator.js';
 import {clerkWebhook, stripeWebhook} from './controllers/webhook.js';
@@ -11,7 +11,7 @@ import UserRouter from './routes/user.js';
 
 const app = express();
 dotenv.config();
-connectDB();
+// connectDB();
 await connectCloudinary();
 
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));

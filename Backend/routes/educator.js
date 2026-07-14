@@ -6,13 +6,15 @@ import upload from '../config/multer.js';
 const EducatorRouter = Router();
 EducatorRouter.get('/', (req, res) => {
     res.send("Educator route is working");
-});
+}); //done
 EducatorRouter.get('/update-role', updatedToEducator);
 
 EducatorRouter.post('/add-course',  upload.single('image'), protectEducator,addCourse);
 
 EducatorRouter.get('/courses', protectEducator, getEducatorCourses);
-EducatorRouter.get('/dashboard', protectEducator, getDashboardData);
+
+
+EducatorRouter.get('/dashboard', protectEducator, getDashboardData); 
 EducatorRouter.get('/enrolled-students', protectEducator, getEnrolledStudents);
 
 export default EducatorRouter;

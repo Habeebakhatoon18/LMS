@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  dbId            String           @id @default(cuid())
+  id              String           @unique // Clerk User ID
+  name            String
+  email           String           @unique
+  imgUrl          String?
+  enrolledCourses Course[]         @relation("UserEnrollments")
+  coursesCreated  Course[]         @relation("EducatorCourses")
+  purchases       Purchase[]
+  courseProgress  CourseProgress[]
+  courseRatings   CourseRating[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Course {
+  id                String           @id @default(cuid())
+  courseTitle       String
+  courseDescription String
+  courseThumbnail   String
+  coursePrice       Float
+  isPublished       Boolean          @default(true)
+  discount          Int
+  educatorId        String
+  educator          User             @relation("EducatorCourses", fields: [educatorId], references: [dbId], onDelete: Cascade)
+  enrolledStudents  User[]           @relation("UserEnrollments")
+  courseContent     Chapter[]
+  courseRatings     CourseRating[]
+  purchases         Purchase[]
+  courseProgresses  CourseProgress[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model Chapter {
+  id             String    @id @default(cuid())
+  chapterId      String
+  chapterOrder   Int
+  chapterTitle   String
+  courseId       String
+  course         Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapterContent Lecture[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([courseId])
+}
+
+model Lecture {
+  id              String   @id @default(cuid())
+  lectureId       String
+  lectureTitle    String
+  lectureDuration Int
+  lectureUrl      String
+  isPreviewFree   Boolean
+  lectureOrder    Int
+  chapterId       String
+  chapter         Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([chapterId])
+}
+
+enum PurchaseStatus {
+  pending
+  completed
+  failed
+}
+
+model Purchase {
+  id        String         @id @default(cuid())
+  userId    String // Clerk ID
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId  String // Course.id
+  course    Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  amount    Float
+  status    PurchaseStatus @default(pending)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([courseId])
+}
+
+model CourseProgress {
+  id                String             @id @default(cuid())
+  userId            String // Clerk ID
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId          String // Course.id
+  course            Course             @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  completed         Boolean            @default(false)
+  lecturesCompleted CompletedLecture[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model CompletedLecture {
+  id         String         @id @default(cuid())
+  progressId String
+  progress   CourseProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+  lectureId  String
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@unique([progressId, lectureId])
+  @@index([lectureId])
+}
+
+model CourseRating {
+  id        String   @id @default(cuid())
+  userId    String // User.dbId
+  user      User     @relation(fields: [userId], references: [dbId], onDelete: Cascade)
+  courseId  String // Course.id
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  rating    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+  @@index([courseId])
+}
